@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Cookie Risk Analyser",
+  "version": "1.0",
+  "description": "Interactive dashboard for understanding and managing web cookies.",
+  "action": {
+    "default_title": "Open Cookie Dashbaord"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "cookies", "activeTab"],
+  "host_permissions": ["<all_urls>"]
+}
