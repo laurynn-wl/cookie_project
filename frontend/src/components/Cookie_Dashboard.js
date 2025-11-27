@@ -13,16 +13,13 @@ import { XCircle } from 'lucide-react';
 function CookieDashboard() {
     // States 
     const [cookies, set_cookies] = useState(mockCookies); 
-    const [active_categories , set_active_categories] = useState(['Essential', 'Preference', 'Analytics', 'Tracking']);
+    const [active_categories , set_active_categories] = useState(['Essential']);
     const [cookie_id, set_cookie_id] = useState(null);
     const [popup_message, set_message] = useState('');
     const [isBannerOpen, setIsBannerOpen] = useState(true);
     const [delete_cookies, set_deleted_cookies] = useState([]); 
+    const [selected_ids, set_selected_ids]    = useState([]);
 
-    // Filters cookies by category toggles 
-    const filtered_cookies = useMemo(() => {
-        return cookies.filter(cookie => active_categories.includes(cookie.category));
-    }, [cookies, active_categories ]);
     
     //TODO: change this when the logic is implemented - currently using mock data for dashboard 
     const { privacy_score, privacy_rank, score_colour, vulnerability_badge_class, vulnerability_badge_text } = cookie_score_data;
@@ -38,7 +35,7 @@ function CookieDashboard() {
         setTimeout(() => set_message(''), 2000);
     }, []);
 
-    // Removes all the cookies of that category from the active cookie list of the toggle has been selected 
+    // Selects all the cookies of that category from the active cookie list of the toggle has been selected 
     const handle_toggles = useCallback((category, is_checked) => {
         set_active_categories(prev => {
             if (is_checked && !prev.includes(category)) {
@@ -49,7 +46,22 @@ function CookieDashboard() {
             }
             return prev;
         });
-    }, []);
+
+        // Finds all the cookie ids that belong to that category
+        const category_ids = cookies
+            .filter(cookie => cookie.category === category)
+            .map(cookie => cookie.id);
+
+        set_selected_ids(prev => {
+            if (is_checked) {
+                // Add back the cookies of this category to the selection
+                return [...new Set([...prev, ...category_ids])];
+            } else {
+                // Remove the cookies of this category from the selection
+                return prev.filter(id => !category_ids.includes(id));
+            }
+        });
+    }, [cookies]);
 
     // Handles the user selecting cookies to accept reject and delete  
     const handle_selection = useCallback((button, ids) => {
@@ -113,10 +125,12 @@ function CookieDashboard() {
                         on_toggle={handle_toggles} 
                     />
                     <CookieTable 
-                        cookies={filtered_cookies} 
+                        cookies={cookies} 
                         delete_cookies={delete_cookies}
                         view_info={set_cookie_id}
                         if_pressed={handle_selection} 
+                        selected_ids={selected_ids}
+                        set_selected_ids={set_selected_ids}
                     />
                 </main>
             </div>

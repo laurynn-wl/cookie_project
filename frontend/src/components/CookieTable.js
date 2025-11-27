@@ -1,29 +1,22 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import {useMemo, useCallback} from 'react';
 import CookieRow from './CookieRow';
+import { BadgeInfo } from 'lucide-react';
 
-const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed }) => {
-    const [selected_ids, set_ids] = useState([]);
-
-    // Removes deleted and rejected from selection 
-    useEffect(() => {
-        set_ids(prev => prev.filter(id => cookies.some(c => c.id === id)));
-    }, [cookies]);
-
+const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, selected_ids, set_selected_ids }) => {
     
     const handle_select_all = useCallback((e) => {
         const checked = e.target.checked;
-
         if(checked){
             const all_ids = cookies.map(c => c.id);
-            set_ids(all_ids);
+            set_selected_ids(all_ids);
         }
         else{
-            set_ids([]);
+            set_selected_ids([]);
         }
-    }, [cookies]);
+    }, [cookies, set_selected_ids]);
 
     const handle_select_row = useCallback((id, checked) => {
-        set_ids(prev => {
+        set_selected_ids(prev => {
             if (checked){
                 return[...prev, id];
             }
@@ -31,10 +24,8 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed })
                 return prev.filter(i => i !==id);
             }
         })
-    },[])      
+    },[set_selected_ids])      
     
-   
-   
     const row_count = cookies.length;
     const checked_count = selected_ids.length;
     const is_multiple_rows = checked_count > 0 && checked_count < row_count;
@@ -56,7 +47,16 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed })
 
     return (
         <div className="lg:col-span-2 bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h2 className="text-2xl font-bold text-white mb-4">Active Cookies</h2>
+            <div className ="flex items-center gap-2 mb-4">
+            <h2 className="text-2xl font-bold text-white">Active Cookies</h2>
+            <div className="infotip flex items-center">
+            <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
+            <span className="infotiptext w-64">
+                Active Cookies Explanation
+            </span>
+            </div>
+            </div>
+            
             
             <div className="overflow-x-auto">
                 <table className="w-full text-left table-auto">

@@ -1,9 +1,10 @@
 // frontend/src/components/CategoryPanel.js
 import React, { useMemo, useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer} from 'recharts';
 import { prepareChartData } from '../utils/cookieUtils';
 import { category_data, category_colour} from '../data/mockData';
 import privacy_tip_data from '../data/privacyTipData';
+import { Lock, BadgeInfo } from 'lucide-react';
 
 // TODO: When selecting the toggle tick active cookies for that category 
 
@@ -68,6 +69,14 @@ const Category_panel = ({ cookies, active_categories, on_toggle }) => {
                                 dangerouslySetInnerHTML={{ __html: category_data[category].explanation }} 
                             />
                         </div>
+                        {is_essential && (
+                        <div className="infotip">
+                            <Lock size={16} className="text-gray-500 cursor-help" />
+                            <span className="infotiptext w-32 text-xs text-center">
+                                These cookies are stricty necessary for website functionality so they can't be disabled.
+                            </span>
+                        </div>
+                        )}
                     </div>
 
                     {/*Positioning and design for category toggles - doesn't allow the essential toggle to be turnt off*/ }
@@ -89,7 +98,16 @@ const Category_panel = ({ cookies, active_categories, on_toggle }) => {
 
     return (
         <div className="lg:col-span-1 bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h2 className="text-2xl font-bold text-white mb-3">Cookie Categories</h2>
+            <div className ="flex items-center gap-2 mb-4">
+                <h2 className="text-2xl font-bold text-white">Cookie Categories</h2>
+                <div className="infotip flex items-center">
+                     {/* When hovering over the info icon, a tip appears explaining how the privacy score is calculated */}
+                <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
+                <span className="infotiptext">
+                    <strong>Cookie Category Explanation</strong>
+                </span>
+            </div>
+            </div>
             <div className="w-full h-64 mx-auto my-2"> 
                 <ResponsiveContainer width="100%" height="100%">
                        {/*Piechart using Recharts*/}
