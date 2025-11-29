@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer} from 'recharts';
 import { prepareChartData } from '../utils/cookieUtils';
 import { category_data, category_colour} from '../data/mockData';
 import privacy_tip_data from '../data/privacyTipData';
-import { Lock, BadgeInfo } from 'lucide-react';
+import { BadgeInfo } from 'lucide-react';
 
 // TODO: When selecting the toggle tick active cookies for that category 
 
@@ -28,7 +28,7 @@ const CategoryHover = ({ active, payload }) => {
     return null;
 };
 
-const Category_panel = ({ cookies, active_categories, on_toggle }) => {
+const Category_panel = ({ cookies }) => {
     
     // Caches the data to avoid recalculating on every time the cookies change
     const piechart_cookie_data = useMemo(() => prepareChartData(cookies), [cookies]);
@@ -39,20 +39,18 @@ const Category_panel = ({ cookies, active_categories, on_toggle }) => {
     });
 
     // 
-    const toggle_items = useMemo(() => {
+    const legend_items = useMemo(() => {
         return Object.keys(category_data).map(category => {
             // Essential cookies cannot be toggled off
-            const is_essential = category === 'Essential';
-            // Determine if the category is on or off
-            let is_toggled;
-            if (active_categories){
-                is_toggled = active_categories.includes(category);
-            }
-            else {
-                is_toggled = true;
-            }
-        
-            
+            // const is_essential = category === 'Essential';
+            // // Determine if the category is on or off
+            // let is_toggled;
+            // if (active_categories){
+            //     is_toggled = active_categories.includes(category);
+            // }
+            // else {
+            //     is_toggled = true;
+            // }
             return (
                 // Spreads each category row with toggle
                 <div key={category} className="flex justify-between items-center">
@@ -69,32 +67,11 @@ const Category_panel = ({ cookies, active_categories, on_toggle }) => {
                                 dangerouslySetInnerHTML={{ __html: category_data[category].explanation }} 
                             />
                         </div>
-                        {is_essential && (
-                        <div className="infotip">
-                            <Lock size={16} className="text-gray-500 cursor-help" />
-                            <span className="infotiptext w-32 text-xs text-center">
-                                These cookies are stricty necessary for website functionality so they can't be disabled.
-                            </span>
-                        </div>
-                        )}
-                    </div>
-
-                    {/*Positioning and design for category toggles - doesn't allow the essential toggle to be turnt off*/ }
-                    <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                        <input 
-                            type="checkbox" 
-                            id={`toggle-${category}`} 
-                            className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" 
-                            checked={is_toggled }
-                            onChange={(e) => on_toggle(category, e.target.checked)}
-                            disabled={is_essential}
-                        />
-                        <label htmlFor={`toggle-${category}`} className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
                     </div>
                 </div>
             );
         });
-    }, [active_categories, on_toggle]);
+    }, []);
 
     return (
         <div className="lg:col-span-1 bg-gray-800 p-6 rounded-lg border border-gray-700">
@@ -136,7 +113,7 @@ const Category_panel = ({ cookies, active_categories, on_toggle }) => {
             </div>
 
             <div className="space-y-5">
-                {toggle_items}
+                {legend_items}
             </div>
             
             {/*TODO: Change this so the privacy tips changes everytime this page is loaded up again */}

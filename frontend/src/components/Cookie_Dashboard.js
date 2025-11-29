@@ -121,8 +121,7 @@ function CookieDashboard() {
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <CategoryPanel 
                         cookies={cookies} 
-                        active_categories={active_categories} 
-                        on_toggle={handle_toggles} 
+                        
                     />
                     <CookieTable 
                         cookies={cookies} 
@@ -131,6 +130,8 @@ function CookieDashboard() {
                         if_pressed={handle_selection} 
                         selected_ids={selected_ids}
                         set_selected_ids={set_selected_ids}
+                        active_categories={active_categories} 
+                        on_toggle={handle_toggles} 
                     />
                 </main>
             </div>

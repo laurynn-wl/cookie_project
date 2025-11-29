@@ -1,8 +1,9 @@
 import {useMemo, useCallback} from 'react';
 import CookieRow from './CookieRow';
-import { BadgeInfo } from 'lucide-react';
+import {Lock, BadgeInfo } from 'lucide-react';
+import { category_data, category_colour} from '../data/mockData';
 
-const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, selected_ids, set_selected_ids }) => {
+const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, selected_ids, set_selected_ids, active_categories, on_toggle}) => {
     
     const handle_select_all = useCallback((e) => {
         const checked = e.target.checked;
@@ -45,6 +46,38 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         ));
     }, [cookies, selected_ids, handle_select_row, view_info, delete_cookies]);
 
+    const toggle_banner = Object.keys(category_data).map(category => {
+        const is_essential = category === 'Essential';
+        const is_toggled = active_categories ? active_categories.includes(category) : true;
+
+        return (
+            <div key={category} className="flex items-center gap-3 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: category_colour[category] }}></span>
+                <span className="text-sm font-medium text-gray-300">{category}</span>
+                {is_essential && (
+                        <div className="infotip">
+                            <Lock size={12} className="text-gray-500 cursor-help" />
+                            <span className="infotiptext w-32 text-xs text-center ml-1 font-normal normal-case">
+                                These cookies are stricty necessary for website functionality so they can't be disabled.
+                            </span>
+                        </div>
+                        )}
+                
+                <div className="relative inline-block w-8 align-middle select-none transition duration-200 ease-in ml-1">
+                    <input 
+                        type="checkbox" 
+                        id={`banner-toggle-${category}`} 
+                        className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer" 
+                        checked={is_toggled}
+                        onChange={(e) => on_toggle(category, e.target.checked)}
+                        disabled={is_essential}
+                    />
+                    <label htmlFor={`banner-toggle-${category}`} className={`toggle-label block overflow-hidden h-4 rounded-full cursor-pointer ${is_essential ? 'opacity-50 cursor-not-allowed' : 'bg-gray-600'}`}></label>
+                </div>
+            </div>
+        );
+    });
+
     return (
         <div className="lg:col-span-2 bg-gray-800 p-6 rounded-lg border border-gray-700">
             <div className ="flex items-center gap-2 mb-4">
@@ -55,6 +88,15 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                 Active Cookies Explanation
             </span>
             </div>
+            </div>
+
+            <div className="mb-6 p-4 bg-gray-700/30 rounded-lg border border-gray-600/50">
+                <div className="flex flex-wrap gap-4 items-center justify-between">
+                    <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider"> Select cookie Categories:</span>
+                    <div className="flex flex-wrap gap-3">
+                        {toggle_banner}
+                    </div>
+                </div>
             </div>
             
             
