@@ -7,9 +7,9 @@ import CookieTable from './CookieTable.js';
 import CookieModal from './CookieModal.js';
 import { XCircle } from 'lucide-react';
 
-//TODO: Add info icons for each section to explain to users what each section is 
-// TODO: remove styling for mobiles  
-
+// TODO: remove styling for mobiles 
+// TODO: Fix cookie category panel as ithe container will expand to have empty space when the active cookie table is larger than the category panel 
+// TODO: Create hovers for the insight badges 
 function CookieDashboard() {
     // States 
     const [cookies, set_cookies] = useState(mockCookies); 
