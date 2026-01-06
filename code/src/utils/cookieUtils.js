@@ -1,0 +1,231 @@
+/*global chrome*/
+import { category_data } from '../data/mockData';
+
+const year_in_seconds = 31536000;
+
+/*
+HELPER FUNCTION: Cookie Categorisation 
+*/
+export const categorise_cookie = (name) => {
+    const lowerName = name ? name.toLowerCase() : '';
+    
+    if (lowerName.includes('_ga') || lowerName.includes('pixel') || lowerName.includes('analytics') || lowerName.includes('utma')) return "Analytics";
+    if (lowerName.includes('ads') || lowerName.includes('track') || lowerName.includes('marketing')) return "Tracking";
+    if (lowerName.includes('sess') || lowerName.includes('auth') || lowerName.includes('id') || lowerName.includes('token') || lowerName.includes('csrf')) return "Essential";
+    if (lowerName.includes('pref') || lowerName.includes('lang') || lowerName.includes('theme')) return "Preference";
+    
+    return "Unknown";
+};
+
+/*
+HELPER FUNCTION: Cookie risk generation based on attributes
+*/
+export const generate_cookie_risk = (details) => {
+    const { is_secure, is_httpOnly, is_hostOnly, sameSite, is_session, expiration_ts } = details;
+    
+
+     // Risk attribute scoring
+    let risk_score = 0;
+    if (!is_secure) risk_score += 3;
+    if (!is_httpOnly) risk_score += 3;
+    if (!is_hostOnly) risk_score += 1;
+    if (sameSite === 'no_restriction') risk_score += 2;
+
+    // Check if cookie lasts longer than 365 days
+    if (!is_session && expiration_ts) {
+        const seconds_to_live = expiration_ts - (Date.now() / 1000);
+        if (seconds_to_live > year_in_seconds) { 
+            risk_score += 1;
+        }
+    }
+
+    // Determine risk label based on score 
+    let label = 'Low Risk';
+    if (risk_score >= 7) {
+        label = 'High Risk';
+    } else if (risk_score >= 3) {
+        label = 'Moderate Risk';
+    }
+
+    return { risk_score, label };
+};
+
+/*
+MAIN FUNCTION: Maps raw Chrome cookie data to structured cookie objects
+*/
+export const map_chrome_cookies = (raw_cookies) => {
+    if (!raw_cookies || !Array.isArray(raw_cookies)) return [];
+
+    return raw_cookies.map((c, index) => {
+        
+        // 1. Clean Data & Boolean Logic
+        const domain = c.domain || '';
+        const name = c.name ? c.name.toLowerCase() : 'unknown';
+        
+        // Ensure booleans are real booleans (fixes "false" string bug)
+        const is_secure = String(c.secure).toLowerCase() === 'true' || c.secure === true;
+        const is_httpOnly = String(c.httpOnly).toLowerCase() === 'true' || c.httpOnly === true;
+        const is_hostOnly = c.hostOnly === true || (c.domain && !c.domain.startsWith('.'));
+        const is_session = String(c.session).toLowerCase() === 'true' || c.session === true;
+        const expiration_ts = c.expiration || c.expirationDate;
+
+        // 2. Calculate Risk
+        const { risk_score, label } = generate_cookie_risk({
+            is_secure,
+            is_httpOnly,
+            is_hostOnly,
+            sameSite: c.sameSite,
+            is_session,
+            expiration_ts
+        });
+
+        // 3. Determine Category
+        const category = categorise_cookie(name);
+      
+        // 4. Return Final Object
+        return {
+            id: (c.name && c.domain) ? (c.name + c.domain) : `cookie-${index}`,
+            name: name,
+            domain: domain,
+            value: c.value || '',
+            category: category,
+            
+            // Risk Data (Used for insights badge)
+            risk_label: label, 
+            risk_score: risk_score,
+            
+            // Raw Flags (Used for modal analysis)
+            secure: is_secure,
+            httpOnly: is_httpOnly,
+            hostOnly: is_hostOnly,
+            sameSite: c.sameSite || 'unspecified',
+            expiration: is_session ? 'Session' : new Date(expiration_ts * 1000).toLocaleDateString(),
+            expiration_time: is_session ? null : expiration_ts
+        };
+    });
+};
+
+
+
+/*
+HELPER FUNCTION: Returns risk insight badge JSX
+*/ 
+export const get_insights = (label) => {
+    
+    let style = "bg-green-600 text-green-100 border-green-500 text-xs"; 
+    
+    if (!label) return null;
+
+    if (label === 'High Risk') {
+        style = "bg-red-600 text-red-100 border-red-500 text-xs";
+    } else if (label === 'Moderate Risk') {
+        style = "bg-yellow-600 text-yellow-100 border-yellow-500 text-xs";
+    }
+
+    return (
+        <span className={`uppercase font-semibold inline-block px-2 py-1 rounded border tracking-wider ${style}`}>
+            {label}
+        </span>
+
+
+    );
+};
+
+/*
+HELPER FUNCTION: Provides detailed security analysis for a cookie
+*/
+export const get_detailed_analysis = (cookie) => {
+    const analysis = [];
+    
+    // 1. Check HttpOnly
+    if (!cookie.httpOnly) {
+        analysis.push({
+            title: "Missing HttpOnly Flag",
+            description: "This cookie can be accessed by client-side scripts, increasing the risk of XSS attacks.",
+            color: "text-red-400"
+        });
+    }
+
+    // 2. Check Secure
+    if (!cookie.secure) {
+        analysis.push({
+            title: "Missing Secure Flag",
+            description: "This cookie is sent over unencrypted HTTP connections, increasing interception risk.",
+            color: "text-red-400"
+        });
+    }
+
+    // 3. Check HostOnly 
+    if (!cookie.hostOnly) {
+        analysis.push({
+            title: "Wide Domain Scope (Not HostOnly)",
+            description: `This cookie is accessible to all subdomains of ${cookie.domain}, increasing the attack surface.`,
+            color: "text-yellow-400"
+        });
+    }
+
+    // 4. Check SameSite
+    if (cookie.sameSite === 'no_restriction') {
+        analysis.push({
+            title: "SameSite: No restriction",
+            description: "This cookie is sent with cross-site requests, enabling CSRF attacks and tracking.",
+            color: "text-orange-400"
+        });
+    }
+
+    // 5. Check Expiration
+    if (cookie.expiration !== 'Session' && cookie.expiration_time) {
+         const seconds_till_expiration = cookie.expiration_time - (Date.now() / 1000);
+         if (seconds_till_expiration > year_in_seconds) {
+             analysis.push({
+                 title: "Long Expiration Date",
+                 description: "This cookie expires in over a year, which is typical for persistent tracking.",
+                 color: "text-blue-400"
+             });
+         }
+    }
+
+    if (analysis.length === 0) {
+        analysis.push({
+            title: "Low Risk Cookie",
+            description: "This cookie has all recommended security attributes.",
+            color: "text-green-400"
+        });
+    }
+
+    return analysis;
+};
+
+/*
+HELPER FUNCTION: Prepares data for category pie chart
+*/
+export const prepareChartData = (cookies) => {
+    if (!cookies || !Array.isArray(cookies)) return [];
+    if (!category_data) return [];
+
+    const count = cookies.reduce((acc, cookie) => {
+        const cat = cookie.category || "Unknown";
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+    }, {});
+
+    return Object.keys(category_data).map(category => ({
+        name: category,
+        value: count[category] || 0,
+        color: category_data[category].color
+    })).filter(item => item.value > 0); 
+};
+
+
+
+// Badge styles for privacy score display
+const badge_style = 'text-sm font-medium px-3 py-1 rounded-full self-start transition-colors duration-200';
+const badge_layout = 'mt-2 sm:mt-0'; 
+
+export const cookie_score_data = {
+    privacy_score: 12, 
+    privacy_rank: 'Medium',
+    score_colour: 'text-yellow-400', 
+    vulnerability_badge_class: `${badge_style} ${badge_layout} bg-yellow-600 text-yellow-100`,
+    vulnerability_badge_text: 'Site Risk: Medium'
+};
