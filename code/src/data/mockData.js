@@ -18,12 +18,14 @@ export const category_data = {
     Essential: { color: '#4ade80', explanation: "<strong>Essential Cookies:</strong> These are necessary for the website to function. They are usually set in response to actions made by you, such as logging in or filling in forms." },
     Preference: { color: '#38bdf8', explanation: "<strong>Preference Cookies:</strong> These cookies allow a website to remember information that changes the way the website behaves or looks, like your preferred language or region." },
     Analytics: { color: '#a78bfa', explanation: "<strong>Analytics Cookies:</strong> Used to understand how visitors interact with the website. They help measure traffic sources and page views, usually anonymously." },
-    Tracking: { color: '#f87171', explanation: "<strong>Tracking Cookies:</strong> These are set by third-party advertisers to build a profile of your interests and show you relevant adverts on other sites. Rejecting these stops this tracking." }
+    Tracking: { color: '#f87171', explanation: "<strong>Tracking Cookies:</strong> These are set by third-party advertisers to build a profile of your interests and show you relevant adverts on other sites. Rejecting these stops this tracking." },
+    Unknown: { color: '#9CA3AF', explanation: "<strong>Unclassified:</strong> We could not automatically identify these cookies in our database or via standard patterns. They may be unique to this specific website."}
 };
 
 export const category_colour = {
     Essential: '#4ade80',
     Preference: '#38bdf8',
     Analytics: '#a78bfa',
-    Tracking: '#f87171'
+    Tracking: '#f87171',
+    Unknown: "#9CA3AF"
 };

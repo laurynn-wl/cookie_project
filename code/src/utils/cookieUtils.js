@@ -1,5 +1,6 @@
 /*global chrome*/
 import { category_data } from '../data/mockData';
+import { cookie_finder_in_db } from './cookieFinder';
 
 const year_in_seconds = 31536000;
 
@@ -8,11 +9,87 @@ HELPER FUNCTION: Cookie Categorisation
 */
 export const categorise_cookie = (name) => {
     const lowerName = name ? name.toLowerCase() : '';
-    
-    if (lowerName.includes('_ga') || lowerName.includes('pixel') || lowerName.includes('analytics') || lowerName.includes('utma')) return "Analytics";
-    if (lowerName.includes('ads') || lowerName.includes('track') || lowerName.includes('marketing')) return "Tracking";
-    if (lowerName.includes('sess') || lowerName.includes('auth') || lowerName.includes('id') || lowerName.includes('token') || lowerName.includes('csrf')) return "Essential";
-    if (lowerName.includes('pref') || lowerName.includes('lang') || lowerName.includes('theme')) return "Preference";
+
+    // 1. Check in the cookie database 
+    const db_category = cookie_finder_in_db(lowerName);
+    if (db_category) {
+        return db_category;
+    }
+
+    // 2. Pattern based categorisation
+    // ESSENTIAL Cookies Patterns
+    if (
+        lowerName.startsWith('st-') ||
+        /^(jsessionid|phpsessid|aspsessionid)/.test(lowerName) ||
+        lowerName.startsWith('aws') ||
+        lowerName.includes('csrf') ||
+        lowerName.includes('xsrf')
+    )  { 
+        return "Essential";
+    }
+
+    // PREFERENCE Cookies Patterns
+    if(
+        lowerName === 'lang' ||
+        lowerName === 'language' ||
+        lowerName.startsWith('wp-settings-') 
+    ) {
+        return "Preference";
+    }
+
+    // ANALYTICS Cookies Patterns
+    if (
+        lowerName.startsWith('_pk_') ||
+        /^(_ga|_gid|_gat)/.test(lowerName)
+    ) {
+        return "Analytics";
+    }
+
+    // TRACKING Cookies Patterns
+    if(
+        lowerName === 'ide' ||
+        lowerName.startsWith('_fbp') ||
+        lowerName.startsWith('_uet')
+    ) {
+        return "Tracking";
+    }
+
+
+    // 3. Keyword based categorisation as fallback
+
+    // ESSENTIAL Keywords
+    if (
+        lowerName.includes('sess') || 
+        lowerName.includes('auth') || 
+        lowerName.includes('id') || 
+        lowerName.includes('cart')){
+            return "Essential";
+        }
+
+    // PREFERENCE Keywords
+    if (
+        lowerName.includes('pref') || 
+        lowerName.includes('darkmode') || 
+        lowerName.includes('theme')) {
+            return "Preference";
+    }
+
+    // ANALYTICS Keywords
+    if (
+        lowerName.includes('metric') || 
+        lowerName.includes('analytics') || 
+        lowerName.includes('stats')) {
+            return "Analytics";
+        }
+
+    //  TRACKING Keywords
+    if (
+        lowerName.includes('pixel') || 
+        lowerName.includes('tracker') || 
+        lowerName.includes('ads') ||
+        lowerName.includes('banner')) {
+            return "Tracking";
+        }
     
     return "Unknown";
 };
