@@ -19,6 +19,8 @@ function CookieDashboard() {
     const [isBannerOpen, setIsBannerOpen] = useState(true);
     const [delete_cookies, set_deleted_cookies] = useState([]); 
     const [selected_ids, set_selected_ids]    = useState([]);
+    const [current_site, set_current_site] = useState([]);
+
 
    // Fetch cookies from Chrome storage on component mount
     useEffect(() => {
@@ -27,14 +29,24 @@ function CookieDashboard() {
             
             // Get data from background script 
             chrome.storage.local.get(['cookies_from_site'], (result) => {
-                if (result.cookies_from_site) {
+                if (result.cookies_from_site && result.cookies_from_site.length > 0) {
                     console.log("Real Data Found:", result.cookies_from_site);
                     const real_data = map_chrome_cookies(result.cookies_from_site);
                     set_cookies(real_data);
+
+                    const site_url = result.cookies_from_site[0];
+                    if (site_url.domain) {
+                        const domain = site_url.domain.startsWith('.') 
+                            ? site_url.domain.substring(1) 
+                            : site_url.domain;
+                        set_current_site(domain);
+                    }
+
                 } else {
                     console.log("No data found in storage.");
                 }
             });
+            
         } else {
             // Use mock data if not in Chrome Extension environment
             console.log("Dev Mode: Loading Mock Data");
@@ -130,8 +142,7 @@ function CookieDashboard() {
                         <h1 className="text-3xl font-bold text-white">Cookie Dashboard</h1>
                         <span id="risk_badge" className={vulnerability_badge_class}>{vulnerability_badge_text}</span>
                     </div>
-                    <p className="text-gray-400 mt-1">Manage your cookie settings for the current site.</p>
-                    {/* TODO: Add the name of the current site here once we can fetch it from the background script*?} */}
+                    <p className="text-gray-400 mt-1">Manage your cookie settings for <span className='text-sky-400 font-medium'>{current_site}</span>.</p>
                 </header>
                 
                 {/* Info Banner to inform users what cpookies are and allows them to x out this tab */}
