@@ -39,7 +39,7 @@ As a final fallback, the system scans the cookie name for common English keyword
 
 ---
 
-## 2. Risk Scoring System
+## 2. Risk Scoring System (Individual Cookies)
 
 The risk calculation is based on the presence (or absence) of critical security attributes defined in the Chrome Cookies API. Scores are weighted based on the severity of the potential exploit.
 
@@ -72,7 +72,68 @@ In addition to the numerical score, the system provides qualitative analysis via
 * **Wide Domain Scope:** "This cookie is accessible to all subdomains, increasing the attack surface."
 * **Long Expiration:** "This cookie expires in over a year, which is typical for persistent tracking."
 
-## 5. References
+---
+
+## 5. Site Privacy Score (Holistic Metrics)
+
+While Sections 2-4 evaluate *individual* cookies, the **Site Privacy Score** evaluates the website as a whole. This is an aggregate metric (0-100) that balances three factors: Surveillance, Security Hygiene, and Data Minimization.
+
+### The Weighted Penalty Model
+The score starts at **100 (Perfect)** and deducts points across three distinct **Penalty Factors**, each with a **Maximum Penalty Cap** to ensure balanced scoring.
+
+$$Score = 100 - (Penalty_{Tracking} + Penalty_{Security} + Penalty_{CookieSum})$$
+
+### Penalty Factor 1: Tracking Surveillance ($Penalty_{Tracking}$)
+*Measures the active monitoring of user behavior.*
+* **Penalty:** **-10 points** per cookie categorized as `Tracking`.
+* **Cap:** Maximum deduction is **50 points**.
+
+**References:**
+* **GDPR Recital 30:** Defines cookies as "online identifiers" that can be used to create user profiles.
+* **ePrivacy Directive (2002/58/EC):** Requires prior consent for non-essential tracking cookies.
+
+### Penalty Factor 2: Security Hygiene ($Penalty_{Security}$)
+*Measures vulnerability to data theft (XSS / Man-in-the-Middle).*
+* **Penalty:** **-5 points** per cookie flagged as `High Risk` (Missing `Secure` or `HttpOnly`).
+* **Adjustment:** If a cookie is *already* penalized in the Tracking factor, the penalty reduces to **-2 points** to prevent double-counting.
+* **Cap:** Maximum deduction is **30 points**.
+
+**References:**
+* **OWASP Top 10 (A05:2021):** Security Misconfiguration (Missing security headers/flags).
+* **RFC 6265 (HTTP State Management):** Defines the standard for `Secure` and `HttpOnly` attributes to mitigate XSS and data leakage.
+
+### Penalty Factor 3: Data Minimization ($Penalty_{CookieSum}$)
+*Measures adherence to the principle of collecting only what is necessary.*
+* **Penalty:** **-1 point** for every **5 total cookies** found.
+* **Cap:** Maximum deduction is **20 points**.
+* **Logic:** A site storing 100+ cookies is hoarding data unnecessarily, creating "Cookie Bloat" and increasing the attack surface.
+
+**References:**
+* **GDPR Article 5(1)(c):** Mandates "Data Minimization"—data collected must be adequate, relevant, and limited to what is necessary.
+* **NIST SP 800-53 (SC-8):** Transmission Confidentiality and Integrity (reducing attack surface by limiting data retention).
+
+---
+
+### The Security Gate (Critical Failure Check)
+Regardless of the calculation above, if an **Essential Cookie** (Session ID, Auth Token) fails basic security checks, the score is capped to reflect the critical vulnerability.
+
+| Critical Failure Found | Implication | Score Cap (Max Grade) |
+| :--- | :--- | :--- |
+| **Essential Cookie missing `Secure`** | Session ID vulnerable to network interception. | **45 / 100 (Grade D)** |
+| **Essential Cookie missing `HttpOnly`** | Session ID vulnerable to Cross-Site Scripting (XSS). | **60 / 100 (Grade C)** |
+
+### Grading Scale
+| Score Range | Grade | Verdict | Description |
+| :--- | :--- | :--- | :--- |
+| **90 - 100** | **A** | **Excellent** | **Privacy-First.** No tracking; strict security; low cookie count. |
+| **75 - 89** | **B** | **Good** | **Standard Secure.** Functional cookies present; analytics securely configured. |
+| **50 - 74** | **C** | **Fair** | **Commercial Standard.** Presence of some ads/analytics; minor security warnings. |
+| **30 - 49** | **D** | **Poor** | **Intrusive.** Significant tracking detected; or Critical Security Failure. |
+| **0 - 29** | **F** | **Critical** | **Surveillance Heavy.** Aggressive tracking; insecure data; excessive bloat. |
+
+---
+
+## 6. References
 
 1.  **Chrome for Developers.** (2025). *chrome.cookies API Reference*. Available at: [https://developer.chrome.com/docs/extensions/reference/api/cookies](https://developer.chrome.com/docs/extensions/reference/api/cookies)
 2.  **OWASP.** (n.d.). *Session Management Cheat Sheet*. Available at: [https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
