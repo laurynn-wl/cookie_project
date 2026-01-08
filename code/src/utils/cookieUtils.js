@@ -293,16 +293,116 @@ export const prepareChartData = (cookies) => {
     })).filter(item => item.value > 0); 
 };
 
-
-
 // Badge styles for privacy score display
 const badge_style = 'text-sm font-medium px-3 py-1 rounded-full self-start transition-colors duration-200';
 const badge_layout = 'mt-2 sm:mt-0'; 
 
-export const cookie_score_data = {
-    privacy_score: 12, 
-    privacy_rank: 'Medium',
-    score_colour: 'text-yellow-400', 
-    vulnerability_badge_class: `${badge_style} ${badge_layout} bg-yellow-600 text-yellow-100`,
-    vulnerability_badge_text: 'Site Risk: Medium'
+export const calculate_site_privacy_score = (cookies) => { 
+    let privacy_score = 100;
+    let capped_score = 100;
+
+    if (!cookies || cookies.length === 0) {
+        return {
+            privacy_score: 100,
+            privacy_rank: 'Excellent',
+            score_colour: 'text-green-400',
+            vulnerability_badge_class: `${badge_style} ${badge_layout} bg-green-600 text-green-100`,
+            vulnerability_badge_text: 'Site Rank: Excellent',
+        };
+    }
+   
+    // 1. Tracking Cookies Penalty
+    const tracking_cookies = cookies.filter(c => c.category === 'Tracking').length;
+    const tracking_penalty = Math.min(tracking_cookies * 10, 50); // Max 50 points
+
+    // 2. Security Risk Penalty
+    let security_penalty_sum = 0;
+    cookies.forEach(c => {
+        if (!c.secure || !c.httpOnly){
+            if (c.category === 'Tracking') {
+                // Reduces score for tracking cookies to prevent double counting
+                security_penalty_sum += 2;
+            } else {
+                security_penalty_sum += 5;
+            }
+        }
+    });
+
+    const security_penalty = Math.min(security_penalty_sum, 30); // Max 30 points
+
+    // 3. Cookie Amount Penalty
+    const cookie_sum_penalty = Math.min(Math.floor(cookies.length / 5), 20); // Max 20 points
+
+
+    // 4. Final Score Calculation    let privacy_score = 100 - tracking_penalty - security_penalty - cookie_sum_penalty;
+    privacy_score = 100 - tracking_penalty - security_penalty - cookie_sum_penalty;
+    privacy_score = Math.max(privacy_score, 0); // Ensure non-negative  
+
+    // 5. Essential Security cap 
+
+    cookies.forEach(c => {
+        if (c.category === 'Essential'){
+            if (!c.secure){
+                capped_score = Math.min(capped_score, 45);
+            }
+            if (!c.httpOnly){
+                capped_score = Math.min(capped_score, 60);
+            }
+        }
+    });
+
+    privacy_score = Math.min(privacy_score, capped_score);
+
+    // Site Rank Determination
+    let grade = 'A';
+    let rank = 'Excellent';
+    let text_color = 'text-green-400';
+    let badge_class = `${badge_style} ${badge_layout} bg-green-600 text-green-100`;
+
+    if (privacy_score >=90) {
+        grade = 'A';
+        rank = 'Excellent';
+        text_color = 'text-green-400';
+        badge_class = `${badge_style} ${badge_layout} bg-green-600 text-green-100`;
+    } else if (privacy_score >=75) {
+        grade = 'B';
+        rank = 'Good';
+        text_color = 'text-lime-400';
+        badge_class = `${badge_style} ${badge_layout} bg-lime-600 text-lime-100`;
+    } else if (privacy_score >=50) {
+        grade = 'C';
+        rank = 'Medium';
+        text_color = 'text-yellow-400';
+        badge_class = `${badge_style} ${badge_layout} bg-yellow-600 text-yellow-100`;
+    } else if (privacy_score >=30) {
+        grade = 'D';
+        rank = 'Poor';
+        text_color = 'text-orange-400';
+        badge_class = `${badge_style} ${badge_layout} bg-orange-600 text-orange-100`;
+    } else {
+        grade = 'F';
+        rank = 'Very Poor';
+        text_color = 'text-red-400';
+        badge_class = `${badge_style} ${badge_layout} bg-red-600 text-red-100`;
+    }
+
+    return {
+        privacy_score,
+        privacy_rank: rank,
+        score_colour: text_color,
+        vulnerability_badge_class: badge_class,
+        vulnerability_badge_text: `Site Rank: ${grade} - ${rank}`
+    };
+
+
 };
+
+
+
+// export const cookie_score_data = {
+//     privacy_score: 12, 
+//     privacy_rank: 'Medium',
+//     score_colour: 'text-yellow-400', 
+//     vulnerability_badge_class: `${badge_style} ${badge_layout} bg-yellow-600 text-yellow-100`,
+//     vulnerability_badge_text: 'Site Risk: Medium'
+// };

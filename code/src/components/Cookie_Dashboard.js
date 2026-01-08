@@ -1,7 +1,7 @@
 /*global chrome*/
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { mockCookies } from '../data/mockData.js';
-import { cookie_score_data, map_chrome_cookies } from '../utils/cookieUtils.js';
+import { calculate_site_privacy_score, map_chrome_cookies } from '../utils/cookieUtils.js';
 import InfoBar from './InfoBar.js';
 import CategoryPanel from './CategoryPanel.js';
 import CookieTable from './CookieTable.js';
@@ -42,10 +42,19 @@ function CookieDashboard() {
         }
     }, []); 
 
+    // Calculates the privacy score whenever the cookies state changes
+    const score_data = useMemo(() => {
+        return calculate_site_privacy_score(cookies);
+    }, [cookies]);
     
-    //TODO: change this when the logic is implemented - currently using mock data for dashboard 
-    const { privacy_score, privacy_rank, score_colour, vulnerability_badge_class, vulnerability_badge_text } = cookie_score_data;
-    
+    const { 
+        privacy_score, 
+        privacy_rank, 
+        score_colour, 
+        vulnerability_badge_text,
+         vulnerability_badge_class 
+    } = score_data;
+ 
     // Finds the cookie the user has clicked on 
     const current_cookie = useMemo(() => {
         return cookies.find(c => c.id === cookie_id);
@@ -122,6 +131,7 @@ function CookieDashboard() {
                         <span id="risk_badge" className={vulnerability_badge_class}>{vulnerability_badge_text}</span>
                     </div>
                     <p className="text-gray-400 mt-1">Manage your cookie settings for the current site.</p>
+                    {/* TODO: Add the name of the current site here once we can fetch it from the background script*?} */}
                 </header>
                 
                 {/* Info Banner to inform users what cpookies are and allows them to x out this tab */}
