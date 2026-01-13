@@ -218,7 +218,8 @@ export const get_detailed_analysis = (cookie) => {
     if (!cookie.httpOnly) {
         analysis.push({
             title: "Missing HttpOnly Flag",
-            description: "This cookie can be accessed by client-side scripts, increasing the risk of XSS attacks.",
+            description: "This cookie can be seen by parts of the website, which could allow attackers to steal if the website is not secure.",
+            // "This cookie can be accessed by client-side scripts, increasing the risk of XSS attacks."
             color: "text-red-400"
         });
     }
@@ -227,7 +228,8 @@ export const get_detailed_analysis = (cookie) => {
     if (!cookie.secure) {
         analysis.push({
             title: "Missing Secure Flag",
-            description: "This cookie is sent over unencrypted HTTP connections, increasing interception risk.",
+            description: "This cookie may be sent without encryption, making it easier for attackers to intercept",
+            //"This cookie is sent over unencrypted HTTP connections, increasing interception risk.",
             color: "text-red-400"
         });
     }
@@ -236,7 +238,8 @@ export const get_detailed_analysis = (cookie) => {
     if (!cookie.hostOnly) {
         analysis.push({
             title: "Wide Domain Scope (Not HostOnly)",
-            description: `This cookie is accessible to all subdomains of ${cookie.domain}, increasing the attack surface.`,
+            description: "This cookie can be used on may parts of the website, which make it easier for attackers to access if a part of the website is compromised.",
+            //`This cookie is accessible to all subdomains of ${cookie.domain}, increasing the attack surface.`,
             color: "text-yellow-400"
         });
     }
@@ -396,13 +399,3 @@ export const calculate_site_privacy_score = (cookies) => {
 
 
 };
-
-
-
-// export const cookie_score_data = {
-//     privacy_score: 12, 
-//     privacy_rank: 'Medium',
-//     score_colour: 'text-yellow-400', 
-//     vulnerability_badge_class: `${badge_style} ${badge_layout} bg-yellow-600 text-yellow-100`,
-//     vulnerability_badge_text: 'Site Risk: Medium'
-// };

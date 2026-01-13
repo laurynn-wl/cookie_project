@@ -1,20 +1,32 @@
-import {useMemo, useCallback} from 'react';
+import {useMemo, useCallback, useState} from 'react';
 import CookieRow from './CookieRow';
-import {Lock, BadgeInfo } from 'lucide-react';
+import {Lock, BadgeInfo, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { category_data, category_colour} from '../data/mockData';
 
 const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, selected_ids, set_selected_ids, active_categories, on_toggle}) => {
-    
+
+    const [searchTerm, setSearchTerm] = useState ({key: null, direction: 'ascending'});
+
+    const filtered_cookies = useMemo(() => {
+
+        if (active_categories.length > 0) {
+            return cookies.filter(cookie => active_categories.includes(cookie.category));
+        }
+        return cookies;
+        
+    }, [cookies, active_categories]);
+
+
     const handle_select_all = useCallback((e) => {
         const checked = e.target.checked;
         if(checked){
-            const all_ids = cookies.map(c => c.id);
+            const all_ids = filtered_cookies.map(c => c.id);
             set_selected_ids(all_ids);
         }
         else{
             set_selected_ids([]);
         }
-    }, [cookies, set_selected_ids]);
+    }, [filtered_cookies, set_selected_ids]);
 
     const handle_select_row = useCallback((id, checked) => {
         set_selected_ids(prev => {
@@ -25,16 +37,58 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                 return prev.filter(i => i !==id);
             }
         })
-    },[set_selected_ids])      
-    
-    const row_count = cookies.length;
+    },[set_selected_ids])   
+
+    const handle_sort = useCallback((key) => {
+        setSearchTerm(prev => {
+            if (prev.key === key){
+                return {key, direction: prev.direction === 'ascending' ? 'descending' : 'ascending'};
+            }
+            else{
+                return {key, direction: 'ascending'};
+            }
+        });
+    }, []);
+
+    const sorted_rows = useMemo(() => {
+        let sorted_cookies = [...filtered_cookies];
+        if (searchTerm.key !== null){
+            sorted_cookies.sort((a,b) => {
+                let a_value = a[searchTerm.key];
+                let b_value = b[searchTerm.key];
+
+                if (a_value === null|| a_value === undefined) a_value = '';
+                if (b_value === null|| b_value === undefined) b_value = '';
+
+                if (typeof a_value === 'string') a_value = a_value.toLowerCase();
+                if (typeof b_value === 'string') b_value = b_value.toLowerCase();
+
+                if (a_value < b_value) {
+                    return searchTerm.direction ==='ascending' ? -1 : 1;
+                }
+                if (a_value > b_value) {
+                    return searchTerm.direction ==='ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sorted_cookies;
+    }, [filtered_cookies, searchTerm]);
+
+    const get_arrow_icon = (columnName) => {
+        if (searchTerm.key !== columnName) return (<ArrowUpDown size={18} className="inline-block ml-1 text-gray-600" />);
+        if (searchTerm.direction === 'ascending') return (<ArrowUp size={18} className="inline-block ml-1 text-sky-400" />);
+        return (<ArrowDown size={18} className="inline-block ml-1 text-sky-400" />);
+    }
+
+    const row_count = sorted_rows.length;
     const checked_count = selected_ids.length;
     const is_multiple_rows = checked_count > 0 && checked_count < row_count;
     const is_all_checked = checked_count === row_count && row_count > 0;
 
     // generates the components of each cookie_row 
     const cookie_rows = useMemo(() => {
-        return cookies.map(cookie => (
+        return sorted_rows.map(cookie => (
             <CookieRow
                 key={cookie.id} 
                 cookie={cookie} 
@@ -44,7 +98,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                 is_deleted={delete_cookies.includes(cookie.id)}
             />
         ));
-    }, [cookies, selected_ids, handle_select_row, view_info, delete_cookies]);
+    }, [sorted_rows, selected_ids, handle_select_row, view_info, delete_cookies]);
 
     const toggle_banner = Object.keys(category_data).map(category => {
         const is_essential = category === 'Essential';
@@ -58,7 +112,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                         <div className="infotip">
                             <Lock size={12} className="text-gray-500 cursor-help" />
                             <span className="infotiptext w-32 text-xs text-center ml-1 font-normal normal-case">
-                                These cookies are stricty necessary for website functionality so they can't be disabled.
+                                These cookies are stricty necessary for website functionality so they can't be rejected or deleted.
                             </span>
                         </div>
                         )}
@@ -70,9 +124,11 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer" 
                         checked={is_toggled}
                         onChange={(e) => on_toggle(category, e.target.checked)}
-                        disabled={is_essential}
                     />
-                    <label htmlFor={`banner-toggle-${category}`} className={`toggle-label block overflow-hidden h-4 rounded-full cursor-pointer ${is_essential ? 'opacity-50 cursor-not-allowed' : 'bg-gray-600'}`}></label>
+                    <label 
+                    htmlFor={`banner-toggle-${category}`} 
+                    className="toggle-label block overflow-hidden h-4 rounded-full cursor-pointer bg-gray-600"
+                    ></label>
                 </div>
             </div>
         );
@@ -82,6 +138,9 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         <div className="lg:col-span-2 bg-gray-800 p-6 rounded-lg border border-gray-700">
             <div className ="flex items-center gap-2 mb-4">
             <h2 className="text-2xl font-bold text-white">Active Cookies</h2>
+            <h2 className="bg-gray-700 text-gray-300 text-base font-bold px-2.5 py-0.5 rounded-full border border-gray-600">
+                    {'Total Cookies: ' + row_count}
+                </h2>
             <div className="infotip flex items-center">
             <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
             <span className="infotiptext w-64">
@@ -113,10 +172,27 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                                     ref={el => el && (el.indeterminate = is_multiple_rows)} 
                                 />
                             </th>
-                            <th className="p-3">NAME</th>
-                            <th className="p-3">DOMAIN</th>
-                            <th className="p-3">CATEGORY</th>
-                            <th className="p-3">INSIGHTS</th>
+                            <th className="p-3 cursor-pointer hover:text-white transition-colors" onClick={() => handle_sort('name')}>
+                                <div className="flex items-center">
+                                    NAME {get_arrow_icon('name')}
+                                </div>
+                            </th>
+                            <th className="p-3 cursor-pointer hover:text-white transition-colors" onClick={() => handle_sort('domain')}>
+                                <div className="flex items-center">
+                                    DOMAIN {get_arrow_icon('domain')}
+                                </div>
+                            </th>
+                            <th className="p-3 cursor-pointer hover:text-white transition-colors" onClick={() => handle_sort('category')}>
+                                <div className="flex items-center">
+                                    CATEGORY {get_arrow_icon('category')}
+                                </div>
+                            </th>
+                            {/* Sorting by 'risk_score' to order by High -> Low Risk */}
+                            <th className="p-3 cursor-pointer hover:text-white transition-colors" onClick={() => handle_sort('risk_score')}>
+                                <div className="flex items-center">
+                                    INSIGHTS {get_arrow_icon('risk_score')}
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="cookie_table" className="divide-y divide-gray-700">

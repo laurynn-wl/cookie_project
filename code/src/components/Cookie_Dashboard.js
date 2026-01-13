@@ -1,25 +1,44 @@
 /*global chrome*/
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, use } from 'react';
 import { mockCookies } from '../data/mockData.js';
 import { calculate_site_privacy_score, map_chrome_cookies } from '../utils/cookieUtils.js';
 import InfoBar from './InfoBar.js';
 import CategoryPanel from './CategoryPanel.js';
 import CookieTable from './CookieTable.js';
 import CookieModal from './CookieModal.js';
-import { XCircle } from 'lucide-react';
+import SettingsDropdown from './SettingsDropdown.js';
+import { XCircle, Settings, HelpCircle, Calculator, BookOpen} from 'lucide-react';
+
 
 // TODO: Fix cookie category panel as the container will expand to have empty space when the active cookie table is larger than the category panel 
 // TODO: Create hovers for the insight badges 
 function CookieDashboard() {
     // States 
     const [cookies, set_cookies] = useState([]); 
-    const [active_categories , set_active_categories] = useState(['Essential']);
+    const [active_categories , set_active_categories] = useState([]);
     const [cookie_id, set_cookie_id] = useState(null);
     const [popup_message, set_message] = useState('');
     const [isBannerOpen, setIsBannerOpen] = useState(true);
     const [delete_cookies, set_deleted_cookies] = useState([]); 
     const [selected_ids, set_selected_ids]    = useState([]);
     const [current_site, set_current_site] = useState([]);
+    const [ is_settings_open, set_is_settings_open] = useState(false);
+    const [ is_tech_info, set_is_tech_info] = useState(false);
+
+
+    // Close settings dropdown when clicking outside the menu
+    const settings_click = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (settings_click.current && !settings_click.current.contains(event.target)) {
+                set_is_settings_open(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside); 
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [settings_click]);
 
 
    // Fetch cookies from Chrome storage on component mount
@@ -116,19 +135,43 @@ function CookieDashboard() {
         
         // Adds the selected cookies into the delete cookie state - this remopves the cookies from the active cookies table
         if (button === 'Delete' || button === 'Reject') {
-            set_deleted_cookies(ids);
+
+            const safe_ids = ids.filter(id => {
+                const cookie = cookies.find(c => c.id === id);
+                return cookie && cookie.category !== 'Essential';
+            });
+
+            const skipped_count = ids.length - safe_ids.length;
+          
+            if (safe_ids.length === 0) {
+                show_popup(`No cookies deleted. Essential cookies cannot be deleted.`);
+                return;
+            }
+
+            set_deleted_cookies(safe_ids);
 
             // Animates the rows deleting to fade out 
             setTimeout(() => {
                 set_cookies(prevCookies => prevCookies.filter(cookie => !ids.includes(cookie.id)));
                 set_deleted_cookies([]);
-                show_popup(`${button}ed ${ids.length} cookie(s).`);
+
+                set_active_categories([]);
+                set_selected_ids([]);
+
+                if (skipped_count > 0) {
+                    show_popup(` ${button}ed ${safe_ids.length} cookies. Skipped ${skipped_count} essential cookie(s).`);
+                }
+                else{ 
+                    show_popup(`${button}ed ${safe_ids.length} cookie(s).`);
+                }
             }, 300);
         } else { 
             // If the button is accept - no rows are removed so no animation 
             show_popup(`Accepted ${ids.length} cookie(s).`);
+            set_active_categories([]);
+            set_selected_ids([]);
         }
-    }, [show_popup]);
+    }, [show_popup, cookies]);
 
     // 
     return (
@@ -136,15 +179,24 @@ function CookieDashboard() {
         <div className="max-w-6xl mx-auto">
             {/* Container for the dashboard */}
             <div className="bg-gray-900 border border-gray-700 shadow-2xl rounded-xl p-6 md:p-8">
-                
-                <header className="border-b border-gray-700 pb-4 mb-6">
-                    <div className="flex sm:flex-row sm:items-center sm:gap-4">
-                        <h1 className="text-3xl font-bold text-white">Cookie Dashboard</h1>
-                        <span id="risk_badge" className={vulnerability_badge_class}>{vulnerability_badge_text}</span>
+                <header className="border-b border-gray-700 pb-4 mb-6 flex justify-between items-start">
+                    <div>
+                        <div className="flex sm:flex-row sm:items-center sm:gap-4">
+                            <h1 className="text-3xl font-bold text-white">Cookie Dashboard</h1>
+                            <span id="risk_badge" className={vulnerability_badge_class}>{vulnerability_badge_text}</span>
+                        </div>
+                        <p className="text-gray-400 mt-1">
+                            Manage your cookie settings for <span className='text-sky-400 font-medium'>{current_site}</span>.
+                        </p>
                     </div>
-                    <p className="text-gray-400 mt-1">Manage your cookie settings for <span className='text-sky-400 font-medium'>{current_site}</span>.</p>
-                </header>
-                
+                    <SettingsDropdown 
+                        is_settings_open={is_settings_open} 
+                        set_is_settings_open={set_is_settings_open} 
+                        is_tech_info={is_tech_info} 
+                        set_is_tech_info={set_is_tech_info} 
+                    />
+</header>
+
                 {/* Info Banner to inform users what cpookies are and allows them to x out this tab */}
             {isBannerOpen && (
                 <div id="cookie_info" className="relative bg-sky-800 text-sky-100 p-4 rounded-lg mb-6 border border-sky-600 shadow-lg">

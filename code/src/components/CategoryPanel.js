@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer} from 'recharts';
 import { prepareChartData } from '../utils/cookieUtils';
 import { category_data, category_colour} from '../data/mockData';
 import privacy_tip_data from '../data/privacyTipData';
-import { BadgeInfo } from 'lucide-react';
+import { BadgeInfo, Eye, List, X } from 'lucide-react';
 
 
 
@@ -30,27 +30,32 @@ const CategoryHover = ({ active, payload }) => {
 
 const Category_panel = ({ cookies }) => {
     
+    // State to manage modal visibility
+    const [is_open, set_is_open] = useState(false); 
+
     // Caches the data to avoid recalculating on every time the cookies change
     const piechart_cookie_data = useMemo(() => prepareChartData(cookies), [cookies]);
 
+    // Creates a lookup object for cookie counts by category
+    const cookie_category_count = useMemo(() => {
+        const lookup = {};
+        Object.keys(category_data).forEach(category => lookup[category] = 0);
+        piechart_cookie_data.forEach(item => {
+            lookup[item.name] = item.value;
+        });
+        return lookup;
+    }, [piechart_cookie_data]);
+
+    // Selects a random privacy tip on each render
     const [current_tip] = useState(() => {
         const tip_index = Math.floor(Math.random() * privacy_tip_data.length);
         return privacy_tip_data[tip_index];
     });
 
-    // 
+    
+    // Generates legend items for each category
     const legend_items = useMemo(() => {
         return Object.keys(category_data).map(category => {
-            // Essential cookies cannot be toggled off
-            // const is_essential = category === 'Essential';
-            // // Determine if the category is on or off
-            // let is_toggled;
-            // if (active_categories){
-            //     is_toggled = active_categories.includes(category);
-            // }
-            // else {
-            //     is_toggled = true;
-            // }
             return (
                 // Spreads each category row with toggle
                 <div key={category} className="flex justify-between items-center">
@@ -78,13 +83,21 @@ const Category_panel = ({ cookies }) => {
             <div className ="flex items-center gap-2 mb-4">
                 <h2 className="text-2xl font-bold text-white">Cookie Categories</h2>
                 <div className="infotip flex items-center">
-                     {/* When hovering over the info icon, a tip appears explaining how the privacy score is calculated */}
+                     {/* When hovering over the info icon, a tooltip appears explaining how the privacy score is calculated */}
                 <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
                 <span className="infotiptext">
                     <strong>Cookie Category Explanation</strong>
                 </span>
             </div>
             </div>
+
+            <button 
+                onClick={() => set_is_open(true)}
+                className="mb-4 w-full flex items-center justify-center gap-2 bg-gray-700/50 hover:bg-gray-700 text-sky-400 hover:text-sky-300 py-1.5 px-3 rounded-md transition-all text-sm font-semibold border border-gray-600/50 hover:border-gray-500">
+                <Eye size={20} />
+                View Category Details
+            </button>
+
             <div className="w-full h-64 mx-auto my-2"> 
                 <ResponsiveContainer width="100%" height="100%">
                        {/*Piechart using Recharts*/}
@@ -116,13 +129,65 @@ const Category_panel = ({ cookies }) => {
                 {legend_items}
             </div>
             
-            {/*TODO: Change this so the privacy tips changes everytime this page is loaded up again */}
+          
             <div className="mt-8 pt-6 border-t border-gray-700">
                 <h3 className="text-xl font-semibold text-white mb-2">Privacy Tip</h3>
                 <p className="text-sm text-gray-200">
                     {current_tip.text}
                 </p>
             </div>
+            {/* Modal for detailed category breakdown*/}
+            {is_open && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                        
+                        <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900">
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <List size={20} className="text-sky-400"/>
+                                Category Details
+                            </h3>
+                            <button onClick={() => set_is_open(false)} className="text-gray-400 hover:text-white transition-colors bg-gray-800 hover:bg-gray-700 p-1 rounded-md">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-4 overflow-y-auto space-y-4 bg-gray-800/50">
+                            {Object.keys(category_data).map(cat => {
+                                const count = cookie_category_count[cat]; 
+                                const color = category_colour[cat] || '#ccc';
+                                const explanation = category_data[cat]?.explanation;
+
+                                return (
+                                    <div key={cat} className="p-4 rounded-lg bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-colors">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <span 
+                                                    className="w-3 h-3 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]" 
+                                                    style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}40` }}
+                                                ></span>
+                                                <span className="font-bold text-gray-100 text-base">{cat}</span>
+                                            </div>
+                                            <span className="bg-gray-800 text-gray-300 text-xs font-bold px-3 py-1 rounded-full border border-gray-700">
+                                                {count} cookies
+                                            </span>
+                                        </div>
+                                        <div 
+                                            className="text-sm text-gray-400 leading-relaxed border-l-2 border-gray-700 pl-3"
+                                            dangerouslySetInnerHTML={{ __html: explanation }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        
+                        <div className="p-3 border-t border-gray-700 bg-gray-900 text-center">
+                            <button onClick={() => set_is_open(false)} className="w-full bg-sky-600 hover:bg-sky-500 text-white font-medium text-base py-2 rounded-lg transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

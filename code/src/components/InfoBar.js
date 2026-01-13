@@ -9,7 +9,7 @@ const info_bar = ({ privacy_score, privacy_rank, score_colour }) => (
         <div className="flex items-center gap-2">
             <div>
                 <span className="text-s text-gray-300 block">Privacy Score </span>
-                <span className={`text-2xl font-semibold ${score_colour}`}>{privacy_score} ~ {privacy_rank}</span>
+                <span className={`text-2xl font-semibold ${score_colour}`}>{privacy_score}/100 ~ {privacy_rank}</span>
             </div>
             <div className="infotip">
                      {/* When hovering over the info icon, a tip appears explaining how the privacy score is calculated */}
