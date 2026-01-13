@@ -3,32 +3,30 @@ import React, { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer} from 'recharts';
 import { prepareChartData } from '../utils/cookieUtils';
 import { category_data, category_colour} from '../data/mockData';
+import { category_explanation } from '../data/DashboardExplanations';   
 import privacy_tip_data from '../data/privacyTipData';
 import { BadgeInfo, Eye, List, X } from 'lucide-react';
 
 
 
 // Information component for each cookie category on hover
-const CategoryHover = ({ active, payload }) => {
+const CategoryHover = ({ active, payload, is_tech_info }) => {
     // Show explanation only when active and payload exists
     if (active && payload && payload.length) {
         const data = payload[0].payload; 
+        const category_name = data.name;
+
         return (
             <div className="bg-gray-800 border border-gray-500 p-3 rounded-lg shadow-lg max-w-s">
                 {/*Category Name and Count*/} 
-                <p className=" text-base font-bold text-white mb-1">{data.name}: {data.value} Cookies</p>
-                <p 
-                // Displays explanation text
-                    className="text-xs text-gray-300" 
-                    dangerouslySetInnerHTML={{ __html: data.explanation }} 
-                />
+                <p className=" text-base font-bold text-white mb-1">{category_name}: {data.value} Cookies</p>
             </div>
         );
     }
     return null;
 };
 
-const Category_panel = ({ cookies }) => {
+const Category_panel = ({ cookies, is_tech_info }) => {
     
     // State to manage modal visibility
     const [is_open, set_is_open] = useState(false); 
@@ -56,6 +54,11 @@ const Category_panel = ({ cookies }) => {
     // Generates legend items for each category
     const legend_items = useMemo(() => {
         return Object.keys(category_data).map(category => {
+
+            const explanation = is_tech_info
+            ? category_explanation[category]?.technical
+            : category_explanation[category]?.simple
+
             return (
                 // Spreads each category row with toggle
                 <div key={category} className="flex justify-between items-center">
@@ -68,15 +71,13 @@ const Category_panel = ({ cookies }) => {
                             </span>
                             {/*Displays information text for each category*/}
                             <span 
-                                className="infotiptext" 
-                                dangerouslySetInnerHTML={{ __html: category_data[category].explanation }} 
-                            />
+                                className="infotiptext">{explanation}</span>
                         </div>
                     </div>
                 </div>
             );
         });
-    }, []);
+    }, [is_tech_info]);
 
     return (
         <div className="lg:col-span-1 bg-gray-800 p-6 rounded-lg border border-gray-700">
@@ -119,7 +120,7 @@ const Category_panel = ({ cookies }) => {
                         </Pie>
                         
                         {/* Displays text info for piecgart */}
-                        <Tooltip content={<CategoryHover/>} />
+                        <Tooltip content={<CategoryHover is_tech_info={is_tech_info}/>} />
                         
                     </PieChart>
                 </ResponsiveContainer>
@@ -155,7 +156,9 @@ const Category_panel = ({ cookies }) => {
                             {Object.keys(category_data).map(cat => {
                                 const count = cookie_category_count[cat]; 
                                 const color = category_colour[cat] || '#ccc';
-                                const explanation = category_data[cat]?.explanation;
+                                const explanation = is_tech_info
+                                    ? category_explanation[cat]?.technical
+                                    : category_explanation[cat]?.simple
 
                                 return (
                                     <div key={cat} className="p-4 rounded-lg bg-gray-900/50 border border-gray-700 hover:border-gray-600 transition-colors">
@@ -172,9 +175,8 @@ const Category_panel = ({ cookies }) => {
                                             </span>
                                         </div>
                                         <div 
-                                            className="text-sm text-gray-400 leading-relaxed border-l-2 border-gray-700 pl-3"
-                                            dangerouslySetInnerHTML={{ __html: explanation }}
-                                        />
+                                            className="text-sm text-gray-400 leading-relaxed border-l-2 border-gray-700 pl-3" > {explanation}
+                                        </div>
                                     </div>
                                 );
                             })}

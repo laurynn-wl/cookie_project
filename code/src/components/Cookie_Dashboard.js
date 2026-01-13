@@ -1,5 +1,5 @@
 /*global chrome*/
-import { useState, useMemo, useCallback, useEffect, useRef, use } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { mockCookies } from '../data/mockData.js';
 import { calculate_site_privacy_score, map_chrome_cookies } from '../utils/cookieUtils.js';
 import InfoBar from './InfoBar.js';
@@ -7,7 +7,7 @@ import CategoryPanel from './CategoryPanel.js';
 import CookieTable from './CookieTable.js';
 import CookieModal from './CookieModal.js';
 import SettingsDropdown from './SettingsDropdown.js';
-import { XCircle, Settings, HelpCircle, Calculator, BookOpen} from 'lucide-react';
+import { XCircle} from 'lucide-react';
 
 
 // TODO: Fix cookie category panel as the container will expand to have empty space when the active cookie table is larger than the category panel 
@@ -216,6 +216,7 @@ function CookieDashboard() {
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <CategoryPanel 
                         cookies={cookies} 
+                        is_tech_info={is_tech_info}
                         
                     />
                     <CookieTable 
@@ -244,6 +245,7 @@ function CookieDashboard() {
                 cookie={current_cookie}
                 isOpen={!!cookie_id}
                 onClose={() => set_cookie_id(null)}
+                is_tech_info={is_tech_info}
             />
         </div>
     );

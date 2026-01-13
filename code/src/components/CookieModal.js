@@ -1,13 +1,12 @@
 import { X } from 'lucide-react';
 import { get_detailed_analysis } from '../utils/cookieUtils'; 
 
-const CookieModal = ({ cookie, isOpen, onClose }) => {
-    
-    // Safety check
+
+const CookieModal = ({ cookie, isOpen, onClose, is_tech_info }) => {
     if (!isOpen || !cookie) return null;
 
     // Run detailed analysis
-    const analysed_cookies = get_detailed_analysis(cookie);
+    const analysed_cookies = get_detailed_analysis(cookie, is_tech_info);
 
     return (
         // OVERLAY

@@ -1,6 +1,8 @@
 /*global chrome*/
 import { category_data } from '../data/mockData';
 import { cookie_finder_in_db } from './cookieFinder';
+import { security_explanation } from '../data/DashboardExplanations';   
+
 
 const year_in_seconds = 31536000;
 
@@ -211,15 +213,16 @@ export const get_insights = (label) => {
 /*
 HELPER FUNCTION: Provides detailed security analysis for a cookie
 */
-export const get_detailed_analysis = (cookie) => {
+export const get_detailed_analysis = (cookie, is_tech_info = false) => {
     const analysis = [];
+    const view = is_tech_info ? 'technical' : 'simple'
     
+
     // 1. Check HttpOnly
     if (!cookie.httpOnly) {
         analysis.push({
             title: "Missing HttpOnly Flag",
-            description: "This cookie can be seen by parts of the website, which could allow attackers to steal if the website is not secure.",
-            // "This cookie can be accessed by client-side scripts, increasing the risk of XSS attacks."
+            description: security_explanation.httpOnly.description[view],
             color: "text-red-400"
         });
     }
@@ -228,8 +231,7 @@ export const get_detailed_analysis = (cookie) => {
     if (!cookie.secure) {
         analysis.push({
             title: "Missing Secure Flag",
-            description: "This cookie may be sent without encryption, making it easier for attackers to intercept",
-            //"This cookie is sent over unencrypted HTTP connections, increasing interception risk.",
+            description: security_explanation.secure.description[view],
             color: "text-red-400"
         });
     }
@@ -238,8 +240,7 @@ export const get_detailed_analysis = (cookie) => {
     if (!cookie.hostOnly) {
         analysis.push({
             title: "Wide Domain Scope (Not HostOnly)",
-            description: "This cookie can be used on may parts of the website, which make it easier for attackers to access if a part of the website is compromised.",
-            //`This cookie is accessible to all subdomains of ${cookie.domain}, increasing the attack surface.`,
+            description: security_explanation.hostOnly.description[view],
             color: "text-yellow-400"
         });
     }
@@ -248,7 +249,7 @@ export const get_detailed_analysis = (cookie) => {
     if (cookie.sameSite === 'no_restriction') {
         analysis.push({
             title: "SameSite: No restriction",
-            description: "This cookie is sent with cross-site requests, enabling CSRF attacks and tracking.",
+            description: security_explanation.sameSite.description[view],
             color: "text-orange-400"
         });
     }
@@ -259,7 +260,7 @@ export const get_detailed_analysis = (cookie) => {
          if (seconds_till_expiration > year_in_seconds) {
              analysis.push({
                  title: "Long Expiration Date",
-                 description: "This cookie expires in over a year, which is typical for persistent tracking.",
+                 description: security_explanation.expiration.description[view],
                  color: "text-blue-400"
              });
          }
@@ -268,7 +269,7 @@ export const get_detailed_analysis = (cookie) => {
     if (analysis.length === 0) {
         analysis.push({
             title: "Low Risk Cookie",
-            description: "This cookie has all recommended security attributes.",
+            description: security_explanation.safe.description[view],
             color: "text-green-400"
         });
     }
