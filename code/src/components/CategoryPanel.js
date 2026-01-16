@@ -26,6 +26,7 @@ const CategoryHover = ({ active, payload, is_tech_info }) => {
     return null;
 };
 
+// Cookie category component for displaying cookie categories 
 const Category_panel = ({ cookies, is_tech_info }) => {
     
     // State to manage modal visibility
@@ -55,12 +56,12 @@ const Category_panel = ({ cookies, is_tech_info }) => {
     const legend_items = useMemo(() => {
         return Object.keys(category_data).map(category => {
 
+            // Explanation changes based on technical, or non technical view 
             const explanation = is_tech_info
             ? category_explanation[category]?.technical
             : category_explanation[category]?.simple
 
             return (
-                // Spreads each category row with toggle
                 <div key={category} className="flex justify-between items-center">
                     {/*Displays the colour dot for each category*/}
                     <div className="flex items-center gap-3">
@@ -92,6 +93,7 @@ const Category_panel = ({ cookies, is_tech_info }) => {
             </div>
             </div>
 
+            {/*Button for detailed category breakdown*/}
             <button 
                 onClick={() => set_is_open(true)}
                 className="mb-4 w-full flex items-center justify-center gap-2 bg-gray-700/50 hover:bg-gray-700 text-sky-400 hover:text-sky-300 py-1.5 px-3 rounded-md transition-all text-sm font-semibold border border-gray-600/50 hover:border-gray-500">
@@ -119,7 +121,7 @@ const Category_panel = ({ cookies, is_tech_info }) => {
                             ))}
                         </Pie>
                         
-                        {/* Displays text info for piecgart */}
+                        {/* Displays text info for piechart */}
                         <Tooltip content={<CategoryHover is_tech_info={is_tech_info}/>} />
                         
                     </PieChart>

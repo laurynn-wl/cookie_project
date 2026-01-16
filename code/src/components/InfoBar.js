@@ -15,18 +15,20 @@ const info_bar = ({ privacy_score, privacy_rank, score_colour }) => (
                      {/* When hovering over the info icon, a tip appears explaining how the privacy score is calculated */}
                 <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
                 <span className="infotiptext">
-                    <strong>How is the privacy score calculated?(functionality will be added when backend logic is complete)</strong>
-                    {/* TODO: Add points calculation logic */}
-                    <ul className="list-disc list-inside mt-1 text-xs">
-                        <li> -x points per Tracking cookie</li>
-                        <li> -x points per Analytics cookie</li>
-                        <li> -x points for missing 'Secure'</li>
-                        <li> -x points for missing 'HttpOnly'</li>
+                    <strong className='block text-center'>How is the privacy score calculated?</strong>
+                    
+                    <ul className="list-disc list-inside mt-1 text-sm">
+                        <li> -10 points per Tracking cookie ~ capped at 50</li>
+                        <li> -5 points per high risk cookie ~ capped at 30</li>
+                        <li> -1 point per every 5 cookies ~ capped at 20</li>
+                        <li> The score is capped at 45 if essential cookies are missing the Secure attribute</li>
+                        <li> The score is capped at 60 if essential cookies are missing the HttpOnly attribute </li>
                     </ul>
                 </span>
             </div>
         </div>
         <div>
+            {/*TODO: Implement privacy streak logic*/}
             <span className="text-s text-gray-300 block">Privacy Streak</span>
             <span className="text-2xl font-semibold text-green-400">3 Days</span>
         </div>

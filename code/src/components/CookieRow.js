@@ -2,14 +2,14 @@ import { get_insights } from '../utils/cookieUtils';
 
 const cookie_row = ({ cookie, is_selected, on_selected, view_info, is_deleted }) => {
     
-    // Opens cookie description is the row is clicked and its not the checkbox 
+    // Opens cookie description is the row is clicked excluding the checkbox 
     const handle_click = (e) => {
         if (e.target.type !== 'checkbox') {
             view_info(cookie.id);
         }
     };
 
-    // Notifys cookie table to remove this cookie's Id if it has been checked 
+    // Notifies cookie table to remove this cookie's ID if it has been checked 
     const handle_checkbox = (e) => {
         on_selected(cookie.id, e.target.checked);
     };
@@ -36,7 +36,7 @@ const cookie_row = ({ cookie, is_selected, on_selected, view_info, is_deleted })
             <td className="p-3">{cookie.name}</td>
             <td className="p-3">{cookie.domain}</td>
             <td className="p-3">{cookie.category}</td>
-            {/* If badges cant fit on one line place the next badge underneath*/}
+            {/* If badges can't fit on one line place the next badge underneath*/}
             <td className="p-3 flex flex-wrap gap-1">{get_insights(cookie.risk_label)}</td>
         </tr>
     );

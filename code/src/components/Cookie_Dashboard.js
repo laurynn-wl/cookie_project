@@ -6,6 +6,7 @@ import InfoBar from './InfoBar.js';
 import CategoryPanel from './CategoryPanel.js';
 import CookieTable from './CookieTable.js';
 import CookieModal from './CookieModal.js';
+import HelpCentre from './HelpCentre.js';
 import SettingsDropdown from './SettingsDropdown.js';
 import { XCircle} from 'lucide-react';
 
@@ -22,8 +23,9 @@ function CookieDashboard() {
     const [delete_cookies, set_deleted_cookies] = useState([]); 
     const [selected_ids, set_selected_ids]    = useState([]);
     const [current_site, set_current_site] = useState([]);
-    const [ is_settings_open, set_is_settings_open] = useState(false);
-    const [ is_tech_info, set_is_tech_info] = useState(false);
+    const [is_settings_open, set_is_settings_open] = useState(false);
+    const [is_helpCentre_open, set_helpCentre] = useState(false);
+    const [is_tech_info, set_is_tech_info] = useState(false);
 
 
     // Close settings dropdown when clicking outside the menu
@@ -46,13 +48,14 @@ function CookieDashboard() {
         // Check if running in Chrome Extension environment
         if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
             
-            // Get data from background script 
+            // Get cookies from background script 
             chrome.storage.local.get(['cookies_from_site'], (result) => {
                 if (result.cookies_from_site && result.cookies_from_site.length > 0) {
-                    console.log("Real Data Found:", result.cookies_from_site);
+                    console.log("Real Cookies Found:", result.cookies_from_site);
                     const real_data = map_chrome_cookies(result.cookies_from_site);
                     set_cookies(real_data);
 
+                    // Extract website name to display on the dashboard in a user friendly format
                     const site_url = result.cookies_from_site[0];
                     if (site_url.domain) {
                         const domain = site_url.domain.startsWith('.') 
@@ -67,7 +70,7 @@ function CookieDashboard() {
             });
             
         } else {
-            // Use mock data if not in Chrome Extension environment
+            //TODO: Use mock data if not in Chrome Extension environment -DELETE
             console.log("Dev Mode: Loading Mock Data");
             set_cookies(mockCookies);
         }
@@ -86,7 +89,7 @@ function CookieDashboard() {
          vulnerability_badge_class 
     } = score_data;
  
-    // Finds the cookie the user has clicked on 
+    // Finds the cookie the user has clicked on for modal view 
     const current_cookie = useMemo(() => {
         return cookies.find(c => c.id === cookie_id);
     }, [cookies, cookie_id]);
@@ -136,16 +139,28 @@ function CookieDashboard() {
         // Adds the selected cookies into the delete cookie state - this remopves the cookies from the active cookies table
         if (button === 'Delete' || button === 'Reject') {
 
-            const safe_ids = ids.filter(id => {
-                const cookie = cookies.find(c => c.id === id);
-                return cookie && cookie.category !== 'Essential';
-            });
+            // Filters Essential and Unknown Cookies so they can't be deleted 
+            const safe_ids = ids.map(id => cookies.find(c => c.id === id))
+            .filter(c => c && c.category !== 'Essential' && c.category !== 'Unknown');
+           
 
             const skipped_count = ids.length - safe_ids.length;
           
             if (safe_ids.length === 0) {
-                show_popup(`No cookies deleted. Essential cookies cannot be deleted.`);
+                show_popup(`No cookies deleted. Essential/Unknown cookies cannot be deleted.`);
                 return;
+            }
+
+            // Sends deletion request to background script 
+            if (typeof chrome != 'undefined' && chrome.runtime){
+                chrome.runtime.sendMessage({
+                    type: 'delete_cookies',
+                    payload: safe_ids
+                }, (response) => {
+                    console.log("Background Response: ", response)
+                });    
+            } else{
+                console.warn("Chrome API not available");
             }
 
             set_deleted_cookies(safe_ids);
@@ -158,11 +173,12 @@ function CookieDashboard() {
                 set_active_categories([]);
                 set_selected_ids([]);
 
+                // TODO: add if statement so the popup depends on whether reject or delete was pressed so the popup message makes sense. 
                 if (skipped_count > 0) {
-                    show_popup(` ${button}ed ${safe_ids.length} cookies. Skipped ${skipped_count} essential cookie(s).`);
+                    show_popup(` ${button}d ${safe_ids.length} cookies. Skipped ${skipped_count} essential cookie(s).`);
                 }
                 else{ 
-                    show_popup(`${button}ed ${safe_ids.length} cookie(s).`);
+                    show_popup(`${button}d ${safe_ids.length} cookie(s).`);
                 }
             }, 300);
         } else { 
@@ -175,7 +191,7 @@ function CookieDashboard() {
 
     // 
     return (
-        // Sets the dashboards max width to a certain sixe and centers it on the screen 
+        // Sets the dashboards max width to a certain size and centers it on the screen 
         <div className="max-w-6xl mx-auto">
             {/* Container for the dashboard */}
             <div className="bg-gray-900 border border-gray-700 shadow-2xl rounded-xl p-6 md:p-8">
@@ -194,10 +210,14 @@ function CookieDashboard() {
                         set_is_settings_open={set_is_settings_open} 
                         is_tech_info={is_tech_info} 
                         set_is_tech_info={set_is_tech_info} 
+                        on_open_help={() => {
+                            set_helpCentre(true);
+                            set_is_settings_open(false);
+                        }}
                     />
 </header>
 
-                {/* Info Banner to inform users what cpookies are and allows them to x out this tab */}
+                {/* Info Banner to inform users what cookies are and allows them to x out this tab */}
             {isBannerOpen && (
                 <div id="cookie_info" className="relative bg-sky-800 text-sky-100 p-4 rounded-lg mb-6 border border-sky-600 shadow-lg">
                     <button id="cookie_description" className="absolute top-3 right-3 text-sky-200 hover:text-white" onClick={() => setIsBannerOpen(false)}>
@@ -232,7 +252,7 @@ function CookieDashboard() {
                 </main>
             </div>
             
-            {/* stlying for popup message for accepting/rejecting/deleting cookies */}
+            {/* styling for popup message for accepting/rejecting/deleting cookies */}
             <div 
                 id="popup_message" 
                 className={`fixed bottom-10 right-10 bg-gray-700 text-white py-3 px-5 rounded-lg shadow-xl transition-all duration-300 ${popup_message ? '' : 'translate-y-20 opacity-0'}`}
@@ -246,6 +266,12 @@ function CookieDashboard() {
                 isOpen={!!cookie_id}
                 onClose={() => set_cookie_id(null)}
                 is_tech_info={is_tech_info}
+            />
+
+            <HelpCentre 
+                isOpen={is_helpCentre_open}
+                onClose={() => set_helpCentre(false)}
+
             />
         </div>
     );

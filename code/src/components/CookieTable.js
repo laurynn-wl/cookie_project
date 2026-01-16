@@ -5,8 +5,10 @@ import { category_data, category_colour} from '../data/mockData';
 
 const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, selected_ids, set_selected_ids, active_categories, on_toggle}) => {
 
+    // Current sort column and direction
     const [searchTerm, setSearchTerm] = useState ({key: null, direction: 'ascending'});
 
+    // Filters cookies based on their category 
     const filtered_cookies = useMemo(() => {
 
         if (active_categories.length > 0) {
@@ -17,6 +19,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
     }, [cookies, active_categories]);
 
 
+    // (de)Selects visible cookies 
     const handle_select_all = useCallback((e) => {
         const checked = e.target.checked;
         if(checked){
@@ -28,6 +31,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         }
     }, [filtered_cookies, set_selected_ids]);
 
+    // Handles selection of cookie rows (checkbox)
     const handle_select_row = useCallback((id, checked) => {
         set_selected_ids(prev => {
             if (checked){
@@ -39,6 +43,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         })
     },[set_selected_ids])   
 
+    // Handle sorting state 
     const handle_sort = useCallback((key) => {
         setSearchTerm(prev => {
             if (prev.key === key){
@@ -50,6 +55,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         });
     }, []);
 
+    // Sorts cookies based on column and direction 
     const sorted_rows = useMemo(() => {
         let sorted_cookies = [...filtered_cookies];
         if (searchTerm.key !== null){
@@ -75,6 +81,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         return sorted_cookies;
     }, [filtered_cookies, searchTerm]);
 
+    // Changes the icon baseed on the sort 
     const get_arrow_icon = (columnName) => {
         if (searchTerm.key !== columnName) return (<ArrowUpDown size={18} className="inline-block ml-1 text-gray-600" />);
         if (searchTerm.direction === 'ascending') return (<ArrowUp size={18} className="inline-block ml-1 text-sky-400" />);
@@ -100,6 +107,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         ));
     }, [sorted_rows, selected_ids, handle_select_row, view_info, delete_cookies]);
 
+    // Selects all cookies for that category when toggled 
     const toggle_banner = Object.keys(category_data).map(category => {
         const is_essential = category === 'Essential';
         const is_toggled = active_categories ? active_categories.includes(category) : true;
@@ -187,7 +195,6 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                                     CATEGORY {get_arrow_icon('category')}
                                 </div>
                             </th>
-                            {/* Sorting by 'risk_score' to order by High -> Low Risk */}
                             <th className="p-3 cursor-pointer hover:text-white transition-colors" onClick={() => handle_sort('risk_score')}>
                                 <div className="flex items-center">
                                     INSIGHTS {get_arrow_icon('risk_score')}

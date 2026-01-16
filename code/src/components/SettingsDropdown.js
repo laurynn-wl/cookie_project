@@ -5,7 +5,8 @@ const SettingsDropdown = ({
     is_settings_open, 
     set_is_settings_open, 
     is_tech_info, 
-    set_is_tech_info 
+    set_is_tech_info,
+    on_open_help
 }) => {
     const settings_click = useRef(null);
 
@@ -38,7 +39,7 @@ const SettingsDropdown = ({
                     <div className="p-4 border-b border-gray-700">
                         <h3 className="text-white text-base font-bold mb-3">Dashboard Settings</h3>
 
-                        {/* Toggle Switch for Technical View */}
+                        {/* Toggle switch for technical view */}
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-300">Technical View</span>
                             <button
@@ -60,8 +61,10 @@ const SettingsDropdown = ({
                     </div>
 
                     <div className="p-2 space-y-1">
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md transition-colors text-left group">
-                            <HelpCircle size={16} className="text-sky-400 group-hover:text-sky-600" /> Help Center
+                        <button 
+                            onClick={on_open_help}
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md transition-colors text-left group">
+                            <HelpCircle size={16} className="text-sky-400 group-hover:text-sky-600" /> Help Centre
                         </button>
                         <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md transition-colors text-left group">
                             <Calculator size={16} className="text-sky-400 group-hover:text-sky-600" /> Cookie Calculation Logic
