@@ -58,61 +58,108 @@ chrome.action.onClicked.addListener(async () => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === 'delete_cookies') {
-
     const cookies_to_delete = request.payload;
+    
+    const performCookieDeletion = async () => {
+    
+            // 2. EXECUTE DELETION (Attempt Standard + Fallback)
+            const processPromises = cookies_to_delete.map(async (cookie) => {
+              const clean_domain = cookie.domain.startsWith('.')
+                    ? cookie.domain.substring(1)
+                    : cookie.domain;
 
-    // We define an async function so we can use 'await'
-    const performDelete = async () => {
-      
-      // 1. Create a list of "Deletion Promises"
-      // This lets us track when every single delete request has finished
-      const deletePromises = cookies_to_delete.map((cookie) => {
-        return new Promise((resolve) => {
-          
-          const protocol = cookie.secure ? 'https:' : 'http:';
-          const clean_domain = cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain;
-          const cookie_url = `${protocol}//${clean_domain}${cookie.path}`;
+                // Cookies must be deleted using the correct protocol
+                const protocol = cookie.secure ? 'https:' : 'http:';
 
-          chrome.cookies.remove({
-            url: cookie_url,
-            name: cookie.name,
-            storeId: cookie.storeId,
-          }, (details) => {
-            if (details) {
-              console.log(`Deleted: ${details.name}`);
+                // Construct a valid URL required by the Chrome Cookies API
+                const cookie_url = `${protocol}//${clean_domain}${cookie.path}`;
+
+                
+                // Attempt 1: Standard Remove
+                await new Promise(resolve => {
+                    chrome.cookies.remove({
+                        url: cookie_url,
+                        name: cookie.name,
+                        storeId: cookie.storeId
+                    }, resolve);
+                });
+
+                // Attempt 2: Expiration Overwrite (Nuclear Option)
+                await new Promise(resolve => {
+                     chrome.cookies.set({
+                        url: cookie_url,
+                        name: cookie.name,
+                        domain: cookie.domain,
+                        path: cookie.path,
+                        expirationDate: 0, // 1970
+                        storeId: cookie.storeId,
+                        secure: cookie.secure,
+                        httpOnly: cookie.httpOnly,
+                        sameSite: cookie.sameSite
+                    }, resolve);
+                });
+            });
+
+            // Wait for all attempts to finish
+            await Promise.all(processPromises);
+
+            // Wait for Chrome to update its internal database
+            await new Promise(r => setTimeout(r, 500));
+
+            // 3. VERIFICATION (Correct Scope & Correct API Usage)
+            if (cookies_to_delete.length > 0) {
+
+                // Use the domain of the first cookie as the verification scope
+                const first = cookies_to_delete[0];
+                const domain_to_check = first.domain.startsWith('.')
+                    ? first.domain.substring(1)
+                    : first.domain;
+
+                // Get ALL cookies still present on this domain
+                const remaining_cookies = await chrome.cookies.getAll({
+                    domain: domain_to_check
+                });
+
+                console.log("Real Data (Remaining):", remaining_cookies);
+
+                // Build a fast lookup set of remaining cookie names
+                const remaining_names = new Set(remaining_cookies.map(c => c.name));
+
+                const confirmed_deleted = [];
+                const failed_to_delete = [];
+
+                cookies_to_delete.forEach((target) => {
+                    if (remaining_names.has(target.name)) {
+                        failed_to_delete.push(target.name);
+                    } else {
+                        confirmed_deleted.push(target.name);
+                    }
+                });
+
+                // REPORTING
+                console.log(`Summary:`);
+                console.log(`✅ Successfully Deleted (${confirmed_deleted.length}):`, confirmed_deleted);
+                console.log(`❌ Failed to Delete (${failed_to_delete.length}):`, failed_to_delete);
+
+                if (failed_to_delete.length > 0) {
+                    sendResponse({
+                        success: false,
+                        message: `Partial success. Deleted: ${confirmed_deleted.length}. Failed: ${failed_to_delete.length}`
+                    });
+                } else {
+                    sendResponse({
+                        success: true,
+                        message: `Success! All ${confirmed_deleted.length} selected cookies were deleted.`
+                    });
+                }
+
             } else {
-              console.error(`Failed to delete: ${cookie.name}`, chrome.runtime.lastError);
+                sendResponse({ success: true, message: "No cookies selected." });
             }
-            resolve(); // Mark this specific deletion as done
-          });
-        });
-      });
 
-      // 2. Wait for ALL deletions to finish
-      await Promise.all(deletePromises);
+                    };
 
-      // 3. RE-FETCH: Get the fresh list of cookies for this domain to prove they are gone
-      if (cookies_to_delete.length > 0) {
-        // Use the domain from the first cookie to find remaining ones
-        const first = cookies_to_delete[0];
-        const domain_to_check = first.domain.startsWith('.') ? first.domain.substring(1) : first.domain;
-
-        const remaining_cookies = await chrome.cookies.getAll({ domain: domain_to_check });
-
-        // This log will appear exactly like "Real Data Found" in your screenshot
-        console.log("Real Data (Remaining):", remaining_cookies);
-      }
-
-      // 4. Send response back to the dashboard
-      sendResponse({ 
-        success: true, 
-        message: `Deletion complete. Checked for remaining cookies.` 
-      });
-    };
-
-    // Execute the function
-    performDelete();
-
-    return true; // Keep the message channel open for the async response
-  }
+        performCookieDeletion();
+        return true; // Keep channel open
+    }
 });

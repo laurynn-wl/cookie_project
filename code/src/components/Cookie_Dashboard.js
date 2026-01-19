@@ -2,6 +2,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { mockCookies } from '../data/mockData.js';
 import { calculate_site_privacy_score, map_chrome_cookies } from '../utils/cookieUtils.js';
+import { calculate_privacy_streak } from '../utils/privacyStreak.js';
 import InfoBar from './InfoBar.js';
 import CategoryPanel from './CategoryPanel.js';
 import CookieTable from './CookieTable.js';
@@ -9,6 +10,7 @@ import CookieModal from './CookieModal.js';
 import HelpCentre from './HelpCentre.js';
 import SettingsDropdown from './SettingsDropdown.js';
 import { XCircle} from 'lucide-react';
+import TrophyModal from './TrophyModal.js';
 
 
 // TODO: Fix cookie category panel as the container will expand to have empty space when the active cookie table is larger than the category panel 
@@ -26,6 +28,8 @@ function CookieDashboard() {
     const [is_settings_open, set_is_settings_open] = useState(false);
     const [is_helpCentre_open, set_helpCentre] = useState(false);
     const [is_tech_info, set_is_tech_info] = useState(false);
+    const [streak, set_streak] = useState(0);
+    const [is_trophy_open, set_trophy_open] = useState(0);
 
 
     // Close settings dropdown when clicking outside the menu
@@ -74,6 +78,11 @@ function CookieDashboard() {
             console.log("Dev Mode: Loading Mock Data");
             set_cookies(mockCookies);
         }
+
+        calculate_privacy_streak((new_streak_count) => {
+            set_streak(new_streak_count);
+        });
+
     }, []); 
 
     // Calculates the privacy score whenever the cookies state changes
@@ -231,7 +240,20 @@ function CookieDashboard() {
                 </div>
             )}
 
-                <InfoBar privacy_score={privacy_score} privacy_rank={privacy_rank} score_colour={score_colour} />
+                <InfoBar 
+                    privacy_score={privacy_score} 
+                    privacy_rank={privacy_rank} 
+                    score_colour={score_colour}
+                    streak={streak}
+                    on_open_trophies={() => set_trophy_open(true)}
+                />
+
+                <TrophyModal
+                    isOpen={is_trophy_open}
+                    onClose={() => set_trophy_open(false)}
+                    streak={streak}
+                />
+
 
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <CategoryPanel 
