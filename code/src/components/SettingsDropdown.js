@@ -1,3 +1,4 @@
+/*global chrome*/
 import React, { useEffect, useRef } from 'react';
 import { Settings, HelpCircle, Calculator } from 'lucide-react';
 
@@ -22,6 +23,20 @@ const SettingsDropdown = ({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [set_is_settings_open]);
+
+    // Function to open GitHub
+    const open_github = () => {
+        const repoUrl = 'https://github.com/laurynn-wl/cookie_project/blob/main/docs/risk_scoring.md'; // <--- REPLACE THIS URL
+
+        if (typeof chrome !== 'undefined' && chrome.tabs) {
+            chrome.tabs.create({ url: repoUrl });
+        } else {
+            window.open(repoUrl, '_blank');
+        }
+        // Optional: Close the dropdown after clicking
+        set_is_settings_open(false);
+    };
+
 
     return (
         <div className="relative" ref={settings_click}>
@@ -66,7 +81,9 @@ const SettingsDropdown = ({
                             className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md transition-colors text-left group">
                             <HelpCircle size={16} className="text-sky-400 group-hover:text-sky-600" /> Help Centre
                         </button>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md transition-colors text-left group">
+                        <button 
+                            onClick={open_github}
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md transition-colors text-left group">
                             <Calculator size={16} className="text-sky-400 group-hover:text-sky-600" /> Cookie Calculation Logic
                         </button>
                     </div>
