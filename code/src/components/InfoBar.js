@@ -13,17 +13,43 @@ const info_bar = ({ privacy_score, privacy_rank, score_colour, streak, on_open_t
             <div className="infotip">
                      {/* When hovering over the info icon, a tip appears explaining how the privacy score is calculated */}
                 <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
-                <span className="infotiptext">
-                    <strong className='block text-center'>How is the privacy score calculated?</strong>
-                    
-                    <ul className="list-disc list-inside mt-1 text-sm">
-                        <li> -10 points per Tracking cookie ~ capped at 50</li>
-                        <li> -5 points per high risk cookie ~ capped at 30</li>
-                        <li> -1 point per every 5 cookies ~ capped at 20</li>
-                        <li> The score is capped at 45 if essential cookies are missing the Secure attribute</li>
-                        <li> The score is capped at 60 if essential cookies are missing the HttpOnly attribute </li>
-                    </ul>
-                </span>
+                <span className="infotiptext w-96 p-4"> 
+    
+    <strong className='block text-center text-sm mb-3 text-white border-b border-gray-600 pb-2'>
+        How is the privacy score calculated?
+    </strong>
+
+    <table className="w-full text-xs text-left border-collapse">
+        <thead>
+            <tr className="text-gray-400">
+                <th className="pb-2 font-semibold">Criteria</th>
+                <th className="pb-2 text-right font-semibold">Impact</th>
+            </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-700">
+            <tr>
+                <td className="py-2 pr-2 text-gray-300">Tracking Cookie</td>
+                <td className="py-2 text-right text-red-400">-10 pts <span className="text-gray-500">(Max 50)</span></td>
+            </tr>
+            <tr>
+                <td className="py-2 pr-2 text-gray-300">High Risk Cookie</td>
+                <td className="py-2 text-right text-red-400">-5 pts <span className="text-gray-500">(Max 30)</span></td>
+            </tr>
+            <tr>
+                <td className="py-2 pr-2 text-gray-300">Cookie Quantity</td>
+                <td className="py-2 text-right text-yellow-400">-1 per 5 <span className="text-gray-500">(Max 20)</span></td>
+            </tr>
+            <tr>
+                <td className="py-2 pr-2 text-gray-300">Missing 'Secure'</td>
+                <td className="py-2 text-right text-orange-400">Cap at 45</td>
+            </tr>
+            <tr>
+                <td className="py-2 pr-2 text-gray-300">Missing 'HttpOnly'</td>
+                <td className="py-2 text-right text-orange-400">Cap at 60</td>
+            </tr>
+        </tbody>
+    </table>
+</span>
             </div>
         </div>
         {/* Privacy Streak */}

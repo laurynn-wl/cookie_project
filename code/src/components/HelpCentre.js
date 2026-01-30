@@ -1,11 +1,39 @@
-// src/components/HelpCentre.js
-import React, { useState } from 'react';
+/*global chrome */
+import React, { useState, useEffect, useRef } from 'react';
 import { X, PlayCircle, Shield, MousePointerClick, Code2, ChevronRight } from 'lucide-react';
 
 const HelpCentre = ({ isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState('start');
+    const help_centre_click = useRef(null);
+
+    // Close help centre when clicking outside the menu
+    useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if ( isOpen && help_centre_click.current && !help_centre_click.current.contains(event.target)) {
+                        onClose();
+                    }
+                };
+                if (isOpen) {
+                    document.addEventListener('mousedown', handleClickOutside);
+                }
+    
+                return () => {
+                    document.removeEventListener('mousedown', handleClickOutside);
+                };
+            }, [isOpen, onClose]);
 
     if (!isOpen) return null;
+
+     // Function to open GitHub
+    const open_github = () => {
+        const repoUrl = 'https://github.com/laurynn-wl/cookie_project/blob/main/docs/risk_scoring.md'; // <--- REPLACE THIS URL
+
+        if (typeof chrome !== 'undefined' && chrome.tabs) {
+            chrome.tabs.create({ url: repoUrl });
+        } else {
+            window.open(repoUrl, '_blank');
+        }
+    };
 
     const tabs = [
         {
@@ -15,8 +43,8 @@ const HelpCentre = ({ isOpen, onClose }) => {
             content: (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                     <h3 className="text-2xl font-bold text-white mb-4">Getting Started</h3>
-                    <p className="text-gray-300 leading-relaxed">
-                        Welcome to the Cookie Dashboard! This tool gives you transparency and control over how this website uses your data.
+                    <p className="text-gray-300 leading-relaxed text-base">
+                        Welcome to the Cookie Dashboard! This tool analyses the cookies on the current website you are visiting and provides insights on how your privacy may be affected.
                     </p>
                     <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
                         <p className="text-sm text-gray-400">Content placeholder: Add your tutorial steps here.</p>
@@ -76,7 +104,9 @@ const HelpCentre = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             
-            <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[600px] max-h-[90vh]">
+            <div 
+                ref={help_centre_click}
+                className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[600px] max-h-[90vh]">
                 
                 
                 <div className="flex items-center justify-between p-5 border-b border-gray-700 bg-gray-800 shrink-0">

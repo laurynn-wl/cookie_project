@@ -1,5 +1,5 @@
 // frontend/src/components/CategoryPanel.js
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer} from 'recharts';
 import { prepareChartData } from '../utils/cookieUtils';
 import { category_data, category_colour} from '../data/mockData';
@@ -31,6 +31,23 @@ const Category_panel = ({ cookies, is_tech_info }) => {
     
     // State to manage modal visibility
     const [is_open, set_is_open] = useState(false); 
+
+    const category_details_click = useRef(null);
+
+    useEffect(() => {
+            const handleClickOutside = (event) => {
+                if ( is_open && category_details_click.current && !category_details_click.current.contains(event.target)) {
+                    set_is_open(false);
+                }
+            };
+            if (is_open) {
+                document.addEventListener('mousedown', handleClickOutside);
+            }
+
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }, [is_open]);
 
     // Caches the data to avoid recalculating on every time the cookies change
     const piechart_cookie_data = useMemo(() => prepareChartData(cookies), [cookies]);
@@ -88,7 +105,15 @@ const Category_panel = ({ cookies, is_tech_info }) => {
                      {/* When hovering over the info icon, a tooltip appears explaining how the privacy score is calculated */}
                 <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
                 <span className="infotiptext">
-                    <strong>Cookie Category Explanation</strong>
+                        <p className='block font-bold text-center text-sm mb-3 text-white border-b border-gray-600 pb-2'>
+                        This panel breaks down cookies intop their functional categories.
+                        </p>
+
+                        <p className='leading-relaxed text-xs text-left'>
+                        • <strong>Pie Chart: </strong> Hover over the segments to see the number of cookies in each category.
+                        <br />
+                        • <strong>View Category Details: </strong> Click the button to view detailed explanations for each category. 
+                        </p>
                 </span>
             </div>
             </div>
@@ -142,7 +167,9 @@ const Category_panel = ({ cookies, is_tech_info }) => {
             {/* Modal for detailed category breakdown*/}
             {is_open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                    <div 
+                        ref ={category_details_click}
+                        className="bg-gray-800 border border-gray-700 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
                         
                         <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900">
                             <h3 className="text-lg font-bold text-white flex items-center gap-2">

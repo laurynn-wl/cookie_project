@@ -23,7 +23,7 @@ function CookieDashboard() {
     const [popup_message, set_message] = useState('');
     const [isBannerOpen, setIsBannerOpen] = useState(true);
     const [delete_cookies, set_deleted_cookies] = useState([]); 
-    const [selected_ids, set_selected_ids]    = useState([]);
+    const [selected_ids, set_selected_ids] = useState([]);
     const [current_site, set_current_site] = useState([]);
     const [is_settings_open, set_is_settings_open] = useState(false);
     const [is_helpCentre_open, set_helpCentre] = useState(false);

@@ -1,14 +1,35 @@
 import React from "react";
 import { X } from "lucide-react";
 import TrophyCase from "./TrophyCase";
+import { useRef, useEffect} from "react";
 
 const TrophyModal = ({isOpen, onClose, streak}) => {
+    const trophy_modal_click = useRef(null);
+    
+        // Close help centre when clicking outside the menu
+        useEffect(() => {
+                    const handleClickOutside = (event) => {
+                        if ( isOpen && trophy_modal_click.current && !trophy_modal_click.current.contains(event.target)) {
+                            onClose();
+                        }
+                    };
+                    if (isOpen) {
+                        document.addEventListener('mousedown', handleClickOutside);
+                    }
+        
+                    return () => {
+                        document.removeEventListener('mousedown', handleClickOutside);
+                    };
+                }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     return(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
 
-            <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl relative overflow-hidden>">
+            <div 
+                ref={trophy_modal_click}
+                className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl relative overflow-hidden">
 
                 <div className='flex justify-between items-center p-6 border-b border-gray-800 bg-gray-800/50'>
                     <div>

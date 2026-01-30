@@ -152,7 +152,21 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
             <div className="infotip flex items-center">
             <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
             <span className="infotiptext w-64">
-                Active Cookies Explanation
+                
+                    <p className='block font-bold text-center text-sm mb-3 text-white border-b border-gray-600 pb-2'>
+                    This table displays all active cookies found on the current website.
+                    </p>
+
+                    <p className='leading-relaxed text-xs text-left'>
+                    • <strong> Inspect: </strong> Click on each row to view detailed information about that cookie.
+                    <br />
+                    • <strong> Delete: </strong> Select individual cookies or categories to reject and delete them. 
+                    <br />
+                    • <strong> Sorting: </strong> Click on the column headers to sort cookies by Name, Domain, Category, or Insights.
+                    <br />
+                    • <strong> Risk Level: </strong> Cookies are assigned a risk level based on their category and potential impact.
+                    <br />
+                    </p>
             </span>
             </div>
             </div>
