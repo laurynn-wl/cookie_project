@@ -56,7 +56,7 @@ const CookieModal = ({ cookie, isOpen, onClose, is_tech_info }) => {
                     </div>
                 </div>
 
-                {/* Security Analysis: Missign attributes etc.. */}
+                {/* Security Analysis: Missing attributes etc.. */}
                 <div>
                     <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                         Security Analysis

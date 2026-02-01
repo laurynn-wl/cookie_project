@@ -292,6 +292,7 @@ export const map_chrome_cookies = (raw_cookies) => {
             value: c.value || '',
             category: category,
 
+            paritionKey: c.paritionKey,
             path: c.path, 
             storeId: c.storeId,
             
