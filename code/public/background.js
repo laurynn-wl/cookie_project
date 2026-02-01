@@ -18,29 +18,71 @@ async function getCookiesForCurrentTab() {
       return;
     }
 
-    // Retrieves all cookies for the specified URL
-    const cookies = await chrome.cookies.getAll({ url: tab.url });
-  
-    // Log whether any cookies were found
-    if (cookies.length === 0) {
+    const frames = await chrome.webNavigation.getAllFrames({ tabId: tab.id });
+
+    const urls = frames.map(frame => frame.url).filter(url => url.startsWith('http'));
+
+    if (!urls.includes(tab.url)) {
+      urls.push(tab.url);
+    }
+
+    const cookiePromises = urls.map(url => chrome.cookies.getAll({ url }));;
+    const results = await Promise.all(cookiePromises);
+
+    const allCookies = results.flat();
+    const uniqueCookiesMap = [];
+    const seenCookies = new Set();
+
+    allCookies.forEach(c => {
+      const key = `${c.name}|${c.domain}|${c.path}`;
+
+      if (!seenCookies.has(key)) {
+        seenCookies.add(key);
+        uniqueCookiesMap.push(c);
+      }
+    });
+
+    if (uniqueCookiesMap.length === 0) {
       console.log("No cookies found for this site.");
     } else {
-      console.log(`Found ${cookies.length} cookies for this site.`);
+      console.log(`Found ${uniqueCookiesMap.length} cookies for this site.`);
     }
 
     // Saves the cookies and URL to local storage for analysis
     await chrome.storage.local.set({ 
-      'cookies_from_site': cookies,
+      'cookies_from_site': uniqueCookiesMap,
       'active_url': tab.url 
     });
-
+    
     console.log("Data saved to local storage.");
     return true;
-
   } catch (error) {
     console.error("Background script error:", error);
     return false;
   }
+  //   // Retrieves all cookies for the specified URL
+  //   const cookies = await chrome.cookies.getAll({ url: tab.url });
+  
+  //   // Log whether any cookies were found
+  //   if (cookies.length === 0) {
+  //     console.log("No cookies found for this site.");
+  //   } else {
+  //     console.log(`Found ${cookies.length} cookies for this site.`);
+  //   }
+
+  //   // Saves the cookies and URL to local storage for analysis
+  //   await chrome.storage.local.set({ 
+  //     'cookies_from_site': cookies,
+  //     'active_url': tab.url 
+  //   });
+
+  //   console.log("Data saved to local storage.");
+  //   return true;
+
+  // } catch (error) {
+  //   console.error("Background script error:", error);
+  //   return false;
+  // }
 }
 
 // Listens for the extension icon click
@@ -56,110 +98,63 @@ chrome.action.onClicked.addListener(async () => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
-  if (request.type === 'delete_cookies') {
-    const cookies_to_delete = request.payload;
     
-    const performCookieDeletion = async () => {
-    
-            // 2. EXECUTE DELETION (Attempt Standard + Fallback)
-            const processPromises = cookies_to_delete.map(async (cookie) => {
-              const clean_domain = cookie.domain.startsWith('.')
-                    ? cookie.domain.substring(1)
-                    : cookie.domain;
-
-                // Cookies must be deleted using the correct protocol
-                const protocol = cookie.secure ? 'https:' : 'http:';
-
-                // Construct a valid URL required by the Chrome Cookies API
-                const cookie_url = `${protocol}//${clean_domain}${cookie.path}`;
-
-                
-                // Attempt 1: Standard Remove
-                await new Promise(resolve => {
-                    chrome.cookies.remove({
-                        url: cookie_url,
-                        name: cookie.name,
-                        storeId: cookie.storeId
-                    }, resolve);
-                });
-
-                // Attempt 2: Expiration Overwrite (Nuclear Option)
-                await new Promise(resolve => {
-                     chrome.cookies.set({
-                        url: cookie_url,
-                        name: cookie.name,
-                        domain: cookie.domain,
-                        path: cookie.path,
-                        expirationDate: 0, // 1970
-                        storeId: cookie.storeId,
-                        secure: cookie.secure,
-                        httpOnly: cookie.httpOnly,
-                        sameSite: cookie.sameSite
-                    }, resolve);
-                });
+    if (request.action === "delete_cookies") {
+        handleCookieDeletion(request.cookies)
+            .then((count) => {
+                // Send success response back to UI
+                sendResponse({ success: true, deletedCount: count });
+            })
+            .catch((err) => {
+                console.error("Deletion failed:", err);
+                sendResponse({ success: false, error: err.message });
             });
 
-            // Wait for all attempts to finish
-            await Promise.all(processPromises);
-
-            // Wait for Chrome to update its internal database
-            await new Promise(r => setTimeout(r, 500));
-
-            // 3. VERIFICATION (Correct Scope & Correct API Usage)
-            if (cookies_to_delete.length > 0) {
-
-                // Use the domain of the first cookie as the verification scope
-                const first = cookies_to_delete[0];
-                const domain_to_check = first.domain.startsWith('.')
-                    ? first.domain.substring(1)
-                    : first.domain;
-
-                // Get ALL cookies still present on this domain
-                const remaining_cookies = await chrome.cookies.getAll({
-                    domain: domain_to_check
-                });
-
-                console.log("Real Data (Remaining):", remaining_cookies);
-
-                // Build a fast lookup set of remaining cookie names
-                const remaining_names = new Set(remaining_cookies.map(c => c.name));
-
-                const confirmed_deleted = [];
-                const failed_to_delete = [];
-
-                cookies_to_delete.forEach((target) => {
-                    if (remaining_names.has(target.name)) {
-                        failed_to_delete.push(target.name);
-                    } else {
-                        confirmed_deleted.push(target.name);
-                    }
-                });
-
-                // REPORTING
-                console.log(`Summary:`);
-                console.log(`✅ Successfully Deleted (${confirmed_deleted.length}):`, confirmed_deleted);
-                console.log(`❌ Failed to Delete (${failed_to_delete.length}):`, failed_to_delete);
-
-                if (failed_to_delete.length > 0) {
-                    sendResponse({
-                        success: false,
-                        message: `Partial success. Deleted: ${confirmed_deleted.length}. Failed: ${failed_to_delete.length}`
-                    });
-                } else {
-                    sendResponse({
-                        success: true,
-                        message: `Success! All ${confirmed_deleted.length} selected cookies were deleted.`
-                    });
-                }
-
-            } else {
-                sendResponse({ success: true, message: "No cookies selected." });
-            }
-
-                    };
-
-        performCookieDeletion();
-        return true; // Keep channel open
+        return true; // Keep the message channel open for async response
     }
 });
+
+// 2. The Main Deletion Logic
+async function handleCookieDeletion(cookiesToDelete) {
+    if (!cookiesToDelete || cookiesToDelete.length === 0) return 0;
+
+    // Create an array of deletion promises
+    const deletionPromises = cookiesToDelete.map(cookie => {
+        
+        // CRITICAL: We must reconstruct the URL that "owns" the cookie
+        const url = getCookieUrl(cookie);
+        
+        const details = {
+            url: url,
+            name: cookie.name,
+        };
+
+        if (cookie.storeId) {
+            details.storeId = cookie.storeId;
+        }
+
+        return chrome.cookies.remove(details);
+    });
+
+    // Wait for all cookies to be removed
+    await Promise.all(deletionPromises);
+    return cookiesToDelete.length;
+}
+
+// 3. Helper: Construct the URL from cookie data
+function getCookieUrl(cookie) {
+    // A: Determine protocol
+    const protocol = cookie.secure ? 'https:' : 'http:';
+
+    // B: Clean the domain (Remove leading dot if present)
+    // e.g., ".google.com" -> "google.com"
+    const domain = cookie.domain.startsWith('.') 
+        ? cookie.domain.slice(1) 
+        : cookie.domain;
+
+    // C: Determine path (default to / if missing)
+    const path = cookie.path || '/';
+
+    // Combine them: https://google.com/
+    return `${protocol}//${domain}${path}`;
+}

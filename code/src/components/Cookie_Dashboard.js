@@ -163,10 +163,17 @@ function CookieDashboard() {
             // Sends deletion request to background script 
             if (typeof chrome != 'undefined' && chrome.runtime){
                 chrome.runtime.sendMessage({
-                    type: 'delete_cookies',
-                    payload: safe_ids
+                    action: 'delete_cookies',
+                    cookies: safe_ids
                 }, (response) => {
-                    console.log("Background Response: ", response)
+                    if (chrome.runtime.lastError) {
+                        console.error("Connection Error", chrome.runtime.lastError);
+                    } else if (response && response.success){
+                        console.log("Background Success", response);
+                    }
+                    else{
+                        console.log("Background Error", response);
+                    }
                 });    
             } else{
                 console.warn("Chrome API not available");
