@@ -40,6 +40,8 @@ async function getCookiesForCurrentTab() {
 
     // STEP B: Fetch cookies for every single URL found
     // This is 'heavy' but ensures we find Google, Facebook, and hidden trackers
+
+    
     const cookiePromises = allUrls.map(url => chrome.cookies.getAll({ url }));
     const results = await Promise.all(cookiePromises);
 
@@ -71,66 +73,7 @@ async function getCookiesForCurrentTab() {
     return false;
   }
 }
-// async function getCookiesForCurrentTab() {
-//   try {
-    
-//     // Gets the current active tab
-//     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-//     if (!tab) {
-//       console.error("ERROR: No active tab found.");
-//       return;
-//     }
-
-//     // Check: Don't run on chrome:// settings pages
-//     if (tab.url.startsWith("chrome://")) {
-//       console.warn("WARNING: Can not extract cookies from a chrome:// page. Try google.com instead.");
-//       return;
-//     }
-
-//     const frames = await chrome.webNavigation.getAllFrames({ tabId: tab.id });
-
-//     const urls = frames.map(frame => frame.url).filter(url => url.startsWith('http'));
-
-//     if (!urls.includes(tab.url)) {
-//       urls.push(tab.url);
-//     }
-
-//     const cookiePromises = urls.map(url => chrome.cookies.getAll({ url }));;
-//     const results = await Promise.all(cookiePromises);
-
-//     const allCookies = results.flat();
-//     const uniqueCookiesMap = [];
-//     const seenCookies = new Set();
-
-//     allCookies.forEach(c => {
-//       const key = `${c.name}|${c.domain}|${c.path}`;
-
-//       if (!seenCookies.has(key)) {
-//         seenCookies.add(key);
-//         uniqueCookiesMap.push(c);
-//       }
-//     });
-
-//     if (uniqueCookiesMap.length === 0) {
-//       console.log("No cookies found for this site.");
-//     } else {
-//       console.log(`Found ${uniqueCookiesMap.length} cookies for this site.`);
-//     }
-
-//     // Saves the cookies and URL to local storage for analysis
-//     await chrome.storage.local.set({ 
-//       'cookies_from_site': uniqueCookiesMap,
-//       'active_url': tab.url 
-//     });
-    
-//     console.log("Data saved to local storage.");
-//     return true;
-//   } catch (error) {
-//     console.error("Background script error:", error);
-//     return false;
-//   }
-// }
 
 // Listens for the extension icon click
 chrome.action.onClicked.addListener(async () => {
@@ -148,9 +91,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
     if (request.action === "delete_cookies") {
         handleCookieDeletion(request.cookies)
-            .then((count) => {
+            .then((result) => {
                 // Send success response back to UI
-                sendResponse({ success: true, deletedCount: count });
+                sendResponse({ success: true, ...result });
             })
             .catch((err) => {
                 console.error("Deletion failed:", err);
@@ -161,51 +104,64 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+
+
 // 2. The Main Deletion Logic
 async function handleCookieDeletion(cookiesToDelete) {
     if (!cookiesToDelete || cookiesToDelete.length === 0) return 0;
-
-    // Create an array of deletion promises
-    const deletionPromises = cookiesToDelete.map(cookie => {
         
-        // CRITICAL: We must reconstruct the URL that "owns" the cookie
+    let deletedCount = 0;
+
+    const deletionPromises = cookiesToDelete.map(async (cookie) => {
+        // 1. Force HTTPS (You already found this is required)
         const url = getCookieUrl(cookie);
         
+        // 2. CRITICAL FIX: Handle Store ID
+        // Your hardcoded test proved we NEED "0". 
+        // If cookie.storeId is missing/null, default it to "0".
+        const targetStoreId = cookie.storeId ? cookie.storeId : "0";
+
         const details = {
             url: url,
             name: cookie.name,
+            storeId: targetStoreId, 
         };
 
-        if (cookie.storeId) {
-            details.storeId = cookie.storeId;
-        }
-
+        // 3. Handle Partition Key (For Google CHIPS/Frames)
         if (cookie.partitionKey) {
             details.partitionKey = cookie.partitionKey;
         }
 
-        return chrome.cookies.remove(details);
+        // DEBUG LOG: See exactly what we are sending to Chrome
+        console.log(`Attempting Delete -> URL: ${details.url} | Name: ${details.name} | Store: ${details.storeId}`);
+
+
+        try {
+            // 4. Perform Deletion
+            await new Promise((resolve) => {
+            chrome.cookies.remove(details, (result) => {
+                if (result) {
+                    deletedCount++;
+                } else {
+                    console.warn(`Failed to delete ${cookie.name}`);
+                }
+                resolve();
+                });
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
     });
 
-    // Wait for all cookies to be removed
     await Promise.all(deletionPromises);
-    return cookiesToDelete.length;
+    return deletedCount;
 }
 
-// 3. Helper: Construct the URL from cookie data
+// 3. Helper: Construct the URL (Your version was good, just kept it clean here)
 function getCookieUrl(cookie) {
-    // A: Determine protocol
-    const protocol = cookie.secure ? 'https:' : 'http:';
-
-    // B: Clean the domain (Remove leading dot if present)
-    // e.g., ".google.com" -> "google.com"
-    const domain = cookie.domain.startsWith('.') 
-        ? cookie.domain.slice(1) 
-        : cookie.domain;
-
-    // C: Determine path (default to / if missing)
+    const domain = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;
     const path = cookie.path || '/';
-
-    // Combine them: https://google.com/
-    return `${protocol}//${domain}${path}`;
+    // Always force HTTPS as per your finding
+    return `https://${domain}${path}`;
 }

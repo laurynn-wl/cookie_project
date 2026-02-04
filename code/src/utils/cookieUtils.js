@@ -17,6 +17,21 @@ Returns one of: "Essential", "Preference", "Analytics", "Tracking", "Unknown"
 export const categorise_cookie = (name) => {
     const lowerName = name ? name.toLowerCase() : '';
 
+    // Google Security & Auth (The one that caused your bug)
+    if (lowerName.startsWith('__secure-') || lowerName.includes('psidcc') || /^(sid|hsid|ssid|apisid|sapisid)$/.test(lowerName)) {
+        return "Essential";
+    }
+
+    // Cloudflare & Infrastructure (Anti-Bot / Load Balancing)
+    if (lowerName.startsWith('__cf') || lowerName.includes('cf_bm') || lowerName.startsWith('aws') || lowerName.startsWith('arraffinity')) {
+        return "Essential";
+    }
+
+    // Payment & Consent (Stripe, Consent Managers)
+    if (lowerName.includes('stripe') || lowerName.includes('paypal') || lowerName.includes('consent') || lowerName.includes('optanon')) {
+        return "Essential";
+    }
+
 
     const db_category = cookie_finder_in_db(lowerName);
     if (db_category) {
@@ -262,7 +277,7 @@ export const map_chrome_cookies = (raw_cookies) => {
         
         // Clean and extract cookie attributes
         const domain = c.domain || '';
-        const name = c.name ? c.name.toLowerCase() : 'unknown';
+        const name = c.name || 'unknown';
         
         // Ensure booleans are real booleans
         const is_secure = String(c.secure).toLowerCase() === 'true' || c.secure === true;
@@ -292,9 +307,10 @@ export const map_chrome_cookies = (raw_cookies) => {
             value: c.value || '',
             category: category,
 
-            paritionKey: c.paritionKey,
-            path: c.path, 
+            partitionKey: c.partitionKey,
             storeId: c.storeId,
+
+            path: c.path, 
             
         
             risk_label: label, 
