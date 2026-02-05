@@ -11,6 +11,7 @@ import HelpCentre from './HelpCentre.js';
 import SettingsDropdown from './SettingsDropdown.js';
 import { XCircle} from 'lucide-react';
 import TrophyModal from './TrophyModal.js';
+import ScoreCapAlert from './ScoreCapAlert.js';
 
 
 // TODO: Fix cookie category panel as the container will expand to have empty space when the active cookie table is larger than the category panel 
@@ -260,6 +261,8 @@ function CookieDashboard() {
                     onClose={() => set_trophy_open(false)}
                     streak={streak}
                 />
+
+                <ScoreCapAlert currentScore={privacy_score} />  
 
 
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
