@@ -31,6 +31,7 @@ function CookieDashboard() {
     const [is_tech_info, set_is_tech_info] = useState(false);
     const [streak, set_streak] = useState(0);
     const [is_trophy_open, set_trophy_open] = useState(0);
+    const [is_scoreCap_open , set_scoreCap_open] = useState(false); 
 
 
     // Close settings dropdown when clicking outside the menu
@@ -85,6 +86,14 @@ function CookieDashboard() {
         });
 
     }, []); 
+
+    useEffect(() => {   
+        const has_seen_onboarding = localStorage.getItem('has_seen_onboarding');
+        if (!has_seen_onboarding) {
+            set_helpCentre(true);
+            localStorage.setItem('has_seen_onboarding', 'true');
+        }
+    }, []);
 
     // Calculates the privacy score whenever the cookies state changes
     const score_data = useMemo(() => {
@@ -206,6 +215,7 @@ function CookieDashboard() {
         }
     }, [show_popup, cookies]);
 
+
     // 
     return (
         // Sets the dashboards max width to a certain size and centers it on the screen 
@@ -262,7 +272,11 @@ function CookieDashboard() {
                     streak={streak}
                 />
 
-                <ScoreCapAlert currentScore={privacy_score} />  
+                <ScoreCapAlert 
+                current_score={privacy_score}
+                is_scoreCap_open={is_scoreCap_open}
+                set_is_scoreCap_open={set_scoreCap_open} 
+                />  
 
 
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
