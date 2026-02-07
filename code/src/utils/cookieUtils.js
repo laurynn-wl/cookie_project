@@ -17,7 +17,7 @@ Returns one of: "Essential", "Preference", "Analytics", "Tracking", "Unknown"
 export const categorise_cookie = (name) => {
     const lowerName = name ? name.toLowerCase() : '';
 
-    // Google Security & Auth (The one that caused your bug)
+    // Google Security & Auth 
     if (lowerName.startsWith('__secure-') || lowerName.includes('psidcc') || /^(sid|hsid|ssid|apisid|sapisid)$/.test(lowerName)) {
         return "Essential";
     }

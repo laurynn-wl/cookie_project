@@ -1,8 +1,6 @@
 /* global chrome */
 
 // Retrieve cookies for the current tab
-
-
 async function getCookiesForCurrentTab() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -14,55 +12,51 @@ async function getCookiesForCurrentTab() {
 
     console.log("1. Starting Deep Scan for: ", tab.url);
 
-    // STEP A: Inject a script to find ALL resources (Images, Scripts, Pixels, CSS)
-    // We use the 'performance' API which lists everything the network fetched.
+    // Gets all resource URLs from the page using the Performance API (works for main page and iframes)
     const resourceResults = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: () => {
-            // This runs inside the browser tab
+            // Get all resource entries and extract their URLs
             return performance.getEntriesByType("resource")
                 .map(r => r.name) // Get the URL
-                .filter(url => url.startsWith('http')); // Valid URLs only
+                .filter(url => url.startsWith('http')); // Valid URLs only (http/https)
         }
     });
 
-    // Extract the URLs found by the script
-    const resourceUrls = (resourceResults[0]?.result) || [];
+    // Extract all resource URLs from the results 
+    const resource_URLS = (resourceResults[0]?.result) || [];
     
     // Add the main tab URL (and frames just in case)
     const frameResults = await chrome.webNavigation.getAllFrames({ tabId: tab.id });
-    const frameUrls = frameResults.map(f => f.url);
+    const frame_URLS = frameResults.map(f => f.url);
     
     // Combine everything into a master list of domains to check
-    const allUrls = [...new Set([tab.url, ...resourceUrls, ...frameUrls])];
+    const all_URLS = [...new Set([tab.url, ...resource_URLS, ...frame_URLS])];
 
-    console.log(`2. Found ${allUrls.length} total resources. fetching cookies...`);
+    console.log(`2. Found ${all_URLS.length} total resources. fetching cookies...`);
 
-    // STEP B: Fetch cookies for every single URL found
-    // This is 'heavy' but ensures we find Google, Facebook, and hidden trackers
-
-    
-    const cookiePromises = allUrls.map(url => chrome.cookies.getAll({ url }));
+    // Fetch cookies for all URLs in parallel
+    const cookiePromises = all_URLS.map(url => chrome.cookies.getAll({ url }));
     const results = await Promise.all(cookiePromises);
 
-    // STEP C: Flatten and Deduplicate
-    const uniqueCookies = [];
-    const seenCookies = new Set();
+    // Flatten results and remove duplicates (some cookies may appear multiple times across resources)
+    const unique_cookies = [];
+    const seen_cookies = new Set();
 
     results.flat().forEach(c => {
-        // Use a composite key to ensure uniqueness
+        // Create a unique key for each cookie based on its identifying properties
         const key = `${c.name}|${c.domain}|${c.path}|${c.storeId}`;
-        if (!seenCookies.has(key)) {
-            seenCookies.add(key);
-            uniqueCookies.push(c);
+        if (!seen_cookies.has(key)) {
+            seen_cookies.add(key);
+            unique_cookies.push(c);
         }
     });
 
-    console.log(`3. Success! Found ${uniqueCookies.length} unique cookies.`);
+    console.log(`3. Success! Found ${unique_cookies.length} unique cookies.`);
 
     // Save to storage
     await chrome.storage.local.set({ 
-      'cookies_from_site': uniqueCookies,
+      'cookies_from_site': unique_cookies,
       'active_url': tab.url 
     });
 
@@ -106,38 +100,66 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 
 
-// 2. The Main Deletion Logic
+const block_list = new Set();
+
+// Continually listens for any changes to cookies in the browser (additions or modifications)
+chrome.cookies.onChanged.addListener((cookie_changes) => {
+    // Exit early if the cookie was removed
+    if (cookie_changes.removed) return;
+
+    const cookie = cookie_changes.cookie;
+    const cookie_info = `${cookie.name}|${cookie.domain}`;
+
+    // Check if this cookie matches any in our block list (i.e., cookies we just deleted)   
+    if (block_list.has(cookie_info)) {
+        console.log(` Deleted cookie: ${cookie.name} tried to regenerate.`);
+
+        // Remove the cookie again to prevent it from regenerating
+        const protocol = cookie.secure ? "https:" : "http:";
+        const domain = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;
+        const url = `${protocol}//${domain}${cookie.path}`;
+
+        chrome.cookies.remove({
+            url: url,
+            name: cookie.name,
+            storeId: cookie.storeId
+        });
+    }
+});
+
+
+// Handles cookie deletion requests from the UI
 async function handleCookieDeletion(cookiesToDelete) {
     if (!cookiesToDelete || cookiesToDelete.length === 0) return 0;
         
     let deletedCount = 0;
 
     const deletionPromises = cookiesToDelete.map(async (cookie) => {
-        // 1. Force HTTPS (You already found this is required)
-        const url = getCookieUrl(cookie);
         
-        // 2. CRITICAL FIX: Handle Store ID
-        // Your hardcoded test proved we NEED "0". 
-        // If cookie.storeId is missing/null, default it to "0".
-        const targetStoreId = cookie.storeId ? cookie.storeId : "0";
+        // Add the cookie to the block list to prevent it from regenerating after deletion
+        const cookie_info = `${cookie.name}|${cookie.domain}`;
+        block_list.add(cookie_info);
+
+        const url = getCookieUrl(cookie);
+        const store_ID = cookie.storeId ? cookie.storeId : "0";
 
         const details = {
             url: url,
             name: cookie.name,
-            storeId: targetStoreId, 
+            storeId: store_ID, 
         };
 
-        // 3. Handle Partition Key (For Google CHIPS/Frames)
+        
         if (cookie.partitionKey) {
             details.partitionKey = cookie.partitionKey;
         }
 
-        // DEBUG LOG: See exactly what we are sending to Chrome
+        
         console.log(`Attempting Delete -> URL: ${details.url} | Name: ${details.name} | Store: ${details.storeId}`);
 
 
         try {
-            // 4. Perform Deletion
+            // Delete the cookie and wait for the result before proceeding to the next one
             await new Promise((resolve) => {
             chrome.cookies.remove(details, (result) => {
                 if (result) {
@@ -158,10 +180,11 @@ async function handleCookieDeletion(cookiesToDelete) {
     return deletedCount;
 }
 
-// 3. Helper: Construct the URL (Your version was good, just kept it clean here)
+// Constructs the URL needed for cookie deletion based on cookie properties
 function getCookieUrl(cookie) {
     const domain = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;
     const path = cookie.path || '/';
     // Always force HTTPS as per your finding
     return `https://${domain}${path}`;
 }
+

@@ -37,7 +37,9 @@ const ScoreCapAlert = ({
                 </h4>
                 <p className="text-xs text-sky-200/80 mt-1 leading-relaxed">
                     You've reached the highest possible privacy score for this website! 
-                    Deleting other cookies won't increase this score, but removing tracking cookies still improves your actual privacy.
+                    <br/> Deleting other cookies won't increase this score, but removing unecessary cookies will still improve your privacy and security. 
+                    <br/> If you want more information on why the score is capped, visit the help centre and go to the <strong>Understanding the Score</strong> section. 
+
                 </p>
             </div>
 
