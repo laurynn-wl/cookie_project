@@ -10,7 +10,7 @@ async function getCookiesForCurrentTab() {
         return false;
     }
 
-    console.log("1. Starting Deep Scan for: ", tab.url);
+    console.log("Starting Deep Scan for: ", tab.url);
 
     // Gets all resource URLs from the page using the Performance API (works for main page and iframes)
     const resourceResults = await chrome.scripting.executeScript({
@@ -33,7 +33,7 @@ async function getCookiesForCurrentTab() {
     // Combine everything into a master list of domains to check
     const all_URLS = [...new Set([tab.url, ...resource_URLS, ...frame_URLS])];
 
-    console.log(`2. Found ${all_URLS.length} total resources. fetching cookies...`);
+    console.log(`Found ${all_URLS.length} total resources. fetching cookies...`);
 
     // Fetch cookies for all URLs in parallel
     const cookiePromises = all_URLS.map(url => chrome.cookies.getAll({ url }));
@@ -52,7 +52,7 @@ async function getCookiesForCurrentTab() {
         }
     });
 
-    console.log(`3. Success! Found ${unique_cookies.length} unique cookies.`);
+    console.log(`Found ${unique_cookies.length} unique cookies.`);
 
     // Save to storage
     await chrome.storage.local.set({ 
@@ -155,7 +155,8 @@ async function handleCookieDeletion(cookiesToDelete) {
         }
 
         
-        console.log(`Attempting Delete -> URL: ${details.url} | Name: ${details.name} | Store: ${details.storeId}`);
+        console.log(`Attempting to delete -> URL: ${details.url} | Name: ${details.name} | Store: ${details.storeId}`);
+        console.log("PLS ACTUALLY WORK!");
 
 
         try {
