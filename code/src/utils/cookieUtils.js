@@ -1,4 +1,6 @@
-/*global chrome*/
+
+
+
 import { category_data } from '../data/mockData';
 import { cookie_finder_in_db } from './cookieFinder';
 import { security_explanation } from '../data/DashboardExplanations';   
@@ -6,29 +8,42 @@ import { security_explanation } from '../data/DashboardExplanations';
 
 const year_in_seconds = 31536000;
 
-/*
-HELPER FUNCTION: Cookie Categorisation
-Determines cookie category based on name patterns and keywords
-1. Checks against known cookie database
-2. Matches name patterns for common categories
-3. Searches for keywords indicative of categories
-Returns one of: "Essential", "Preference", "Analytics", "Tracking", "Unknown"
+/** 
+ * Determines the category of a cookie based on its name and known patterns
+ * Order of checks:
+ * 1. Specific known patterns for Google, Cloudflare, Payment & Consent cookies
+ * 2. Open Cookie Database lookup
+ * 3. General patterns for Essential, Preference, Analytics, and Tracking cookies
+ * 4. Keyword-based heuristics
+ * 5. Defaults to "Unknown" if no patterns match
+ * @param {string} name - The name of the cookie to categorise
+ * @returns {string} - The determined category of the cookie (Essential, Preference, Analytics, Tracking, Unknown)
 */
 export const categorise_cookie = (name) => {
     const lowerName = name ? name.toLowerCase() : '';
 
-    // Google Security & Auth 
-    if (lowerName.startsWith('__secure-') || lowerName.includes('psidcc') || /^(sid|hsid|ssid|apisid|sapisid)$/.test(lowerName)) {
+    // Security & Authentication Cookies (Google, session management)
+    if (
+        lowerName.startsWith('__secure-') || 
+        lowerName.includes('psidcc') || /^(sid|hsid|ssid|apisid|sapisid)$/.test(lowerName)) {
         return "Essential";
     }
 
-    // Cloudflare & Infrastructure (Anti-Bot / Load Balancing)
-    if (lowerName.startsWith('__cf') || lowerName.includes('cf_bm') || lowerName.startsWith('aws') || lowerName.startsWith('arraffinity')) {
+    // Infrastructure Cookies (Cloudflare, AWS, Azure)
+    if (
+        lowerName.startsWith('__cf') || 
+        lowerName.includes('cf_bm') || 
+        lowerName.startsWith('aws') || 
+        lowerName.startsWith('arraffinity')) {
         return "Essential";
     }
 
     // Payment & Consent (Stripe, Consent Managers)
-    if (lowerName.includes('stripe') || lowerName.includes('paypal') || lowerName.includes('consent') || lowerName.includes('optanon')) {
+    if (
+        lowerName.includes('stripe') || 
+        lowerName.includes('paypal') || 
+        lowerName.includes('consent') || 
+        lowerName.includes('optanon')) {
         return "Essential";
     }
 
@@ -112,19 +127,11 @@ export const categorise_cookie = (name) => {
     return "Unknown";
 };
 
-/*
-HELPER FUNCTION: Cookie risk generation
-Calculates risk score and label based on cookie attributes
-Attributes considered:
-- is_secure
-- is_httpOnly
-- is_hostOnly
-- sameSite
-- is_session
-- expiration_ts
-Returns an object with risk_score and label
-
-*/
+/**
+ * Calculates a risk score and label for a cookie based on its security attributes
+ * @param {Object} details - An object containing cookie attributes: is_secure, is_httpOnly, is_hostOnly, sameSite, is_session, expiration_ts
+ * @returns {{risk_score: number, label: string}} - An object with risk_score (numeric) and label (Low Risk, Moderate Risk, High Risk) 
+ */
 export const generate_cookie_risk = (details) => {
     const { is_secure, is_httpOnly, is_hostOnly, sameSite, is_session, expiration_ts } = details;
     
@@ -144,7 +151,6 @@ export const generate_cookie_risk = (details) => {
         }
     }
 
-    // Determine risk label based on score 
     let label = 'Low Risk';
     if (risk_score >= 7) {
         label = 'High Risk';
@@ -155,10 +161,11 @@ export const generate_cookie_risk = (details) => {
     return { risk_score, label };
 };
 
-/*
-HELPER FUNCTION: Get Insights
-Returns styled badge based on risk label
-*/ 
+/**
+ * Returns a styled badge component based on the risk label
+ * @param {string} label 
+ * @returns {JSX.Element|null} A styled badge component based on the risk label
+ */
 export const get_insights = (label) => {
     
     let style = "bg-green-600 text-green-100 border-green-500 text-xs"; 
@@ -175,16 +182,16 @@ export const get_insights = (label) => {
         <span className={`uppercase font-semibold inline-block px-2 py-1 rounded border tracking-wider ${style}`}>
             {label}
         </span>
-
-
     );
 };
 
-/*
-HELPER FUNCTION: Detailed Cookie Analysis
-Generates detailed analysis of cookie based on its attributes
-Returns an array of analysis objects with title, description, and color 
-*/
+
+/**
+ * Generates a detailed analysis of a cookie's security based on its attributes
+ * @param {Object} cookie 
+ * @param {boolean} is_tech_info 
+ * @returns {Array} An array of analysis points with title, description, and color based on the cookie's security attributes
+ */
 export const get_detailed_analysis = (cookie, is_tech_info = false) => {
     const analysis = [];
     const view = is_tech_info ? 'technical' : 'simple'
@@ -243,20 +250,23 @@ export const get_detailed_analysis = (cookie, is_tech_info = false) => {
     return analysis;
 };
 
-/*
-HELPER FUNCTION: Prepare Chart Data
-Aggregates cookie data for chart visualization
-Returns an array of objects with name, value, and color for each category   
-*/
+
+/**
+ * Aggegates cookie data to prepare it for pie chart visualisation
+ * @param {Array<Object>} cookies 
+ * @returns {Array<Object>} An array of objects containing category, count, and color for each cookie category present in the input array, formatted for charting
+ */
 export const prepareChartData = (cookies) => {
     if (!cookies || !Array.isArray(cookies)) return [];
     if (!category_data) return [];
 
+    // Count cookies in each category
     const count = cookies.reduce((acc, cookie) => {
         const cat = cookie.category || "Unknown";
         acc[cat] = (acc[cat] || 0) + 1;
         return acc;
     }, {});
+
 
     return Object.keys(category_data).map(category => ({
         name: category,
@@ -265,11 +275,12 @@ export const prepareChartData = (cookies) => {
     })).filter(item => item.value > 0); 
 };
 
-/*
-MAIN FUNCTION: Maps Chrome Cookies 
-Transforms raw Chrome cookie data into structured format with risk and category
-returns an array of mapped cookie objects
-*/
+/**
+ * Maps raw Chrome cookie objects into a structured format 
+ * category, risk score, and risk label based on cookie attributes
+ * @param {Array<Object>} raw_cookies 
+ * @returns {Array<Object>} An array of cookie objects mapped from the raw Chrome cookie format to a standardised format with calculated risk scores and categories
+ */
 export const map_chrome_cookies = (raw_cookies) => {
     if (!raw_cookies || !Array.isArray(raw_cookies)) return [];
 
@@ -341,6 +352,20 @@ const badge_layout = 'mt-2 sm:mt-0';
     4. Deduct points for excessive cookie count (max 20 points)
     5. Cap score based on essential cookie security attributes
  Returns an object with privacy score, rank, color, and badge details
+
+ */
+
+/**
+ * Calculates a privacy score for a site based on its cookies and categorises the site's privacy level
+ * Algorithm:
+ * 1. Start with a perfect score of 100
+ * 2. Deduct points for tracking cookies (10 points each, max 50 points)
+ * 3. Deduct points for security risks (5 points each, max 30 points)
+ * 4. Deduct points for excessive cookie count (1 point per cookie over 5, max 20 points)
+ * 5. Cap score based on essential cookie security attributes
+ * 6. Determine site rank based on final score
+ * @param {Array<Object>} cookies 
+ * @returns {Object} An object containing privacy score, rank, color, and badge details
  */
 export const calculate_site_privacy_score = (cookies) => { 
     let privacy_score = 100;
@@ -372,14 +397,13 @@ export const calculate_site_privacy_score = (cookies) => {
             }
         }
     });
-
     const security_penalty = Math.min(security_penalty_sum, 30); // Max 30 points
 
     // Cookie Quantity Penalty
     const cookie_sum_penalty = Math.min(Math.floor(cookies.length / 5), 20); // Max 20 points
 
 
-    // Final Score Calculation    let privacy_score = 100 - tracking_penalty - security_penalty - cookie_sum_penalty;
+    // Final Score Calculation
     privacy_score = 100 - tracking_penalty - security_penalty - cookie_sum_penalty;
     privacy_score = Math.max(privacy_score, 0); // Ensure non-negative  
 

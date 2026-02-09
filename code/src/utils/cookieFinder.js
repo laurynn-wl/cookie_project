@@ -2,14 +2,19 @@ import openCookieDB from '../data/open-cookie-database.json'
 
 let cookie_db = null; 
 
-// Initialise the cookie database from the JSON file
+/** 
+ * Intialises the cookie database from Open Cookie Database
+ * Builds a structure for efficient lookups of cookie names, including support for wildcard patterns
+ */
 const initialise_database = () => {
     if (cookie_db) {
         return;
     }
     console.log("Initialising cookie database...");
 
-    // Structure: { exact: {cookie_name: category}, wildcards: [{pattern: string, category: string}] }
+    // Create a structured database for efficient lookups
+    // exact: { "cookie_name": "Category" }
+    // wildcards: [ { pattern: "cookie_prefix*", category: "Category" } ]
     cookie_db = {
         exact: {},
         wildcards: []
@@ -31,7 +36,7 @@ const initialise_database = () => {
                     const db_category = entry.category; 
                     const is_wildcard = entry.wildcardMatch === "1";
 
-                    // Map database categories to our categories
+                    // Map database categories to categories
                     if (cookie_name && db_category) {
                         let mapped_category = "Unknown";
                 
@@ -57,7 +62,7 @@ const initialise_database = () => {
                                 mapped_category = "Unknown";
                         }
 
-                        // Store in the database structure
+                        // Stores recognised categories in the database
                         if (mapped_category !== "Unknown") {
                             if (is_wildcard) {
                                 cookie_db.wildcards.push({
@@ -84,9 +89,10 @@ const initialise_database = () => {
     }
 };
 
-/*
-Lookup a cookie name in the database and return its category if found
-Returns null if not found
+/** 
+ * Lookups a cookie name in the database and returns its category
+ * @param {string} cookie_name - The name of the cookie to lookup
+ * @returns {string|null} - The category of the cookie or null if not found
  */
 export const cookie_finder_in_db = (cookie_name) => {
     if (!cookie_db) {
@@ -98,7 +104,7 @@ export const cookie_finder_in_db = (cookie_name) => {
     if (cookie_db.exact[cookie_name.toLowerCase()]) {
         return cookie_db.exact[cookie_name.toLowerCase()];
     }
-
+    //
     const wildcards_matching = cookie_db.wildcards.find(entry => cookie_name.toLowerCase().startsWith(entry.pattern));
     if (wildcards_matching) {
         return wildcards_matching.category;

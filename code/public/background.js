@@ -156,7 +156,6 @@ async function handleCookieDeletion(cookiesToDelete) {
 
         
         console.log(`Attempting to delete -> URL: ${details.url} | Name: ${details.name} | Store: ${details.storeId}`);
-        console.log("PLS ACTUALLY WORK!");
 
 
         try {
