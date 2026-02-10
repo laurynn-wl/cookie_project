@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { X, Info } from 'lucide-react';     
 
+// Displays informational alert for the user's privacy score
 const ScoreCapAlert = ({ 
     current_score, 
     is_scoreCap_open, 
     set_is_scoreCap_open }) => {
 
+    // Watched for changes in the privacy score - opens alert when score cap is reached
     useEffect(() => {
 
         if (current_score === 60 || current_score === 45) {
@@ -18,6 +20,7 @@ const ScoreCapAlert = ({
 
     }, [current_score, set_is_scoreCap_open]);
 
+    // Manually closes the alert when dismissed
     const handleClose = () => {
         set_is_scoreCap_open(false);
     

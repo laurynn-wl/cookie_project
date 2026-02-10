@@ -9,7 +9,10 @@ import { BadgeInfo, Eye, List, X } from 'lucide-react';
 
 
 
-// Information component for each cookie category on hover
+/**
+ * Tooltip displayed when hovering over a pie chart segment
+ * Shows the category name and number of cookies in that category
+ */
 const CategoryHover = ({ active, payload, is_tech_info }) => {
     // Show explanation only when active and payload exists
     if (active && payload && payload.length) {
@@ -18,7 +21,6 @@ const CategoryHover = ({ active, payload, is_tech_info }) => {
 
         return (
             <div className="bg-gray-800 border border-gray-500 p-3 rounded-lg shadow-lg max-w-s">
-                {/*Category Name and Count*/} 
                 <p className=" text-base font-bold text-white mb-1">{category_name}: {data.value} Cookies</p>
             </div>
         );
@@ -26,7 +28,9 @@ const CategoryHover = ({ active, payload, is_tech_info }) => {
     return null;
 };
 
-// Cookie category component for displaying cookie categories 
+/**
+ * Displays the cookie categories, pie chart visulisation and category explainations
+ */
 const Category_panel = ({ cookies, is_tech_info }) => {
     
     // State to manage modal visibility
@@ -34,6 +38,7 @@ const Category_panel = ({ cookies, is_tech_info }) => {
 
     const category_details_click = useRef(null);
 
+    // Closes the modal when the user clicks outside it 
     useEffect(() => {
             const handleClickOutside = (event) => {
                 if ( is_open && category_details_click.current && !category_details_click.current.contains(event.target)) {
@@ -69,11 +74,11 @@ const Category_panel = ({ cookies, is_tech_info }) => {
     });
 
     
-    // Generates legend items for each category
+    // Generates legend items for each category 
+    // Explanation text adapts based on technical or non technical view 
     const legend_items = useMemo(() => {
         return Object.keys(category_data).map(category => {
-
-            // Explanation changes based on technical, or non technical view 
+            
             const explanation = is_tech_info
             ? category_explanation[category]?.technical
             : category_explanation[category]?.simple

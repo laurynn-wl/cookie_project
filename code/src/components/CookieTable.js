@@ -8,7 +8,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
     // Current sort column and direction
     const [searchTerm, setSearchTerm] = useState ({key: null, direction: 'ascending'});
 
-    // Filters cookies based on their category 
+    // Filters cookies based on active categoty toggle 
     const filtered_cookies = useMemo(() => {
 
         if (active_categories.length > 0) {
@@ -81,7 +81,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         return sorted_cookies;
     }, [filtered_cookies, searchTerm]);
 
-    // Changes the icon baseed on the sort 
+    // Changes the icon based on the sort 
     const get_arrow_icon = (columnName) => {
         if (searchTerm.key !== columnName) return (<ArrowUpDown size={18} className="inline-block ml-1 text-gray-600" />);
         if (searchTerm.direction === 'ascending') return (<ArrowUp size={18} className="inline-block ml-1 text-sky-400" />);
@@ -93,7 +93,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
     const is_multiple_rows = checked_count > 0 && checked_count < row_count;
     const is_all_checked = checked_count === row_count && row_count > 0;
 
-    // generates the components of each cookie_row 
+    // generates the table rows of each cookie 
     const cookie_rows = useMemo(() => {
         return sorted_rows.map(cookie => (
             <CookieRow

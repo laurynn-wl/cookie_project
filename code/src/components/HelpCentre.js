@@ -2,6 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, PlayCircle, Shield, MousePointerClick, ChevronRight, ShieldAlert, Search, CheckSquare, ToggleLeft, Trash, AlertTriangle, Glasses, Eye, Settings, TrendingDown, Github} from 'lucide-react';
 
+/**
+ * Displays guidance and explanations for dashboard 
+ */
 const HelpCentre = ({ isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState('start');
     const help_centre_click = useRef(null);

@@ -1,15 +1,19 @@
 import { get_insights } from '../utils/cookieUtils';
 
+
+/**
+ * 
+ */
 const cookie_row = ({ cookie, is_selected, on_selected, view_info, is_deleted }) => {
     
-    // Opens cookie description is the row is clicked excluding the checkbox 
+    // Opens cookie detail view unless the checkbox was clicked 
     const handle_click = (e) => {
         if (e.target.type !== 'checkbox') {
             view_info(cookie.id);
         }
     };
 
-    // Notifies cookie table to remove this cookie's ID if it has been checked 
+    // Notifies when a cookie is selected or deselected
     const handle_checkbox = (e) => {
         on_selected(cookie.id, e.target.checked);
     };

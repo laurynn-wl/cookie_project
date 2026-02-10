@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import TrophyCase from "./TrophyCase";
 import { useRef, useEffect} from "react";
 
+// Trophie centre for privacy streaks 
 const TrophyModal = ({isOpen, onClose, streak}) => {
     const trophy_modal_click = useRef(null);
     
@@ -37,7 +38,7 @@ const TrophyModal = ({isOpen, onClose, streak}) => {
                             Achievements 🏆
                         </h2>
                         <p className='text-gray-300 text-sm mt-1'>
-                            Keep your privacy streak alive to unlock trophies
+                            Keep your privacy streak alive to unlock trophies!
                         </p>
                     </div>
                     <button

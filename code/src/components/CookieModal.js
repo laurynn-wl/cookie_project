@@ -1,7 +1,10 @@
 import { X } from 'lucide-react';
 import { get_detailed_analysis } from '../utils/cookieUtils'; 
 
-// Modal displaying detailed information about each cookie
+/**
+ * Dsiplays information about a selected cookie
+ * e.g name, category, domain, expiration and security attributes 
+ */
 const CookieModal = ({ cookie, isOpen, onClose, is_tech_info }) => {
     if (!isOpen || !cookie) return null;
 

@@ -14,10 +14,9 @@ import TrophyModal from './TrophyModal.js';
 import ScoreCapAlert from './ScoreCapAlert.js';
 
 
-// TODO: Fix cookie category panel as the container will expand to have empty space when the active cookie table is larger than the category panel 
-// TODO: Create hovers for the insight badges 
+
 function CookieDashboard() {
-    // States 
+    // State Variables 
     const [cookies, set_cookies] = useState([]); 
     const [active_categories , set_active_categories] = useState([]);
     const [cookie_id, set_cookie_id] = useState(null);
@@ -76,17 +75,19 @@ function CookieDashboard() {
             });
             
         } else {
-            //TODO: Use mock data if not in Chrome Extension environment -DELETE
+            // Use mock data if not in Chrome Extension environment - for demo purposes 
             console.log("Dev Mode: Loading Mock Data");
             set_cookies(mockCookies);
         }
 
+        
         calculate_privacy_streak((new_streak_count) => {
             set_streak(new_streak_count);
         });
 
     }, []); 
 
+    // Show help centre when first visiting the website 
     useEffect(() => {   
         const has_seen_onboarding = localStorage.getItem('has_seen_onboarding');
         if (!has_seen_onboarding) {
@@ -149,13 +150,13 @@ function CookieDashboard() {
 
     // Handles the user selecting cookies to accept reject and delete  
     const handle_selection = useCallback((button, ids) => {
-        // If there are no cookies selected but the button hasd been pressed - popup to inform the users to select cookies
+        // If there are no cookies selected but the button has been pressed - popup to inform the users to select cookies
         if (ids.length === 0) {
             show_popup(`Please select cookies to ${button.toLowerCase()}.`);
             return;
         }
         
-        // Adds the selected cookies into the delete cookie state - this remopves the cookies from the active cookies table
+        // Adds the selected cookies into the delete cookie state - this removes the cookies from the active cookies table
         if (button === 'Delete' || button === 'Reject') {
 
             // Filters Essential and Unknown Cookies so they can't be deleted 
@@ -199,7 +200,7 @@ function CookieDashboard() {
                 set_active_categories([]);
                 set_selected_ids([]);
 
-                // TODO: add if statement so the popup depends on whether reject or delete was pressed so the popup message makes sense. 
+                
                 if (skipped_count > 0) {
                     show_popup(` ${button}d ${safe_ids.length} cookies. Skipped ${skipped_count} essential cookie(s).`);
                 }
@@ -252,7 +253,6 @@ function CookieDashboard() {
                     </button>
                     <h3 className="font-semibold text-lg mb-1">What are Cookies?</h3>
                     <p className="text-sm">
-                        {/*TODO: Change description based on research*/}
                         Cookies are small text files websites store on your browser. They are used to remember your preferences (like language), keep you logged in (session cookies), and, in some cases, track your activity across different sites for advertising. This dashboard helps you see and control them.
                     </p>
                 </div>
