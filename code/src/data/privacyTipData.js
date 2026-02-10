@@ -1,3 +1,5 @@
+
+// List of tips diplayed on the dashbaord -  changes everytime the page is reloaded 
 const privacy_tip_data = [
     // What Cookies Are
     {

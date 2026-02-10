@@ -1,3 +1,4 @@
+// Explanations displayed on the dashboard - consits of technical and non-technical explanations 
 export const category_explanation = {
     "Essential": {
         simple: "Essential cookies are needed for the website to work properly. They help to keep you logged in and remember items in your shopping basket as you move between pages.",
@@ -63,8 +64,13 @@ export const security_explanation = {
             simple: "This cookie is set safely and does not pose security or privacy risks.",
             technical: "This cookie has all recommended security attributes.",
         }
-    }
-    
-    
-
+    } 
 }
+
+export const category_colour = {
+    Essential: '#4ade80',
+    Preference: '#38bdf8',
+    Analytics: '#a78bfa',
+    Tracking: '#f87171',
+    Unknown: "#9CA3AF"
+};
