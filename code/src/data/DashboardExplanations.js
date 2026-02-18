@@ -1,4 +1,4 @@
-// Explanations displayed on the dashboard - consits of technical and non-technical explanations 
+// Explanations displayed on the dashboard - consists of technical and non-technical explanations 
 export const category_explanation = {
     "Essential": {
         simple: "Essential cookies are needed for the website to work properly. They help to keep you logged in and remember items in your shopping basket as you move between pages.",

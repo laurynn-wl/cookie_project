@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer} from 'recharts';
 import { prepareChartData } from '../utils/cookieUtils';
 import { category_data, category_colour} from '../data/mockData';
 import { category_explanation } from '../data/DashboardExplanations';   
-import privacy_tip_data from '../data/privacyTipData';
+import { get_random_tip } from '../utils/privacyTip';
 import { BadgeInfo, Eye, List, X } from 'lucide-react';
 
 
@@ -68,10 +68,7 @@ const Category_panel = ({ cookies, is_tech_info }) => {
     }, [piechart_cookie_data]);
 
     // Selects a random privacy tip on each render
-    const [current_tip] = useState(() => {
-        const tip_index = Math.floor(Math.random() * privacy_tip_data.length);
-        return privacy_tip_data[tip_index];
-    });
+    const[current_tip] = useState(() => get_random_tip()); 
 
     
     // Generates legend items for each category 

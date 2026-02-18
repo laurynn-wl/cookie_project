@@ -1,5 +1,5 @@
-//TODO: Change the explanation 
 
+// Mock Cookie Data 
 export const mockCookies = [
     { id: 1, name: '_ga', domain: 'google-analytics.com', category: 'Analytics', vulnerabilities: ['3rd-Party'], expiration: '2 years' },
     { id: 2, name: 'session_id', domain: 'current-site.com', category: 'Essential', vulnerabilities: ['Missing Secure', 'Missing HttpOnly'], expiration: 'Session' },

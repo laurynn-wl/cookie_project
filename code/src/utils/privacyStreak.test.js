@@ -16,9 +16,10 @@ global.chrome = {
 
 describe('Unit Test: Privacy Streak Logic', () => {
     
-    const TODAY_TIMESTAMP = 10000 * 24 * 60 * 60 * 1000; 
-    const YESTERDAY_DAYS = 9999;
-    const TWO_DAYS_AGO_DAYS = 9998;
+    // 
+    const today = 10000 * 24 * 60 * 60 * 1000; 
+    const yesterday_days = 9999;
+    const two_days_ago = 9998;
 
     let callback;
 
@@ -28,7 +29,7 @@ describe('Unit Test: Privacy Streak Logic', () => {
         callback = jest.fn(); 
         
 
-        jest.spyOn(Date, 'now').mockReturnValue(TODAY_TIMESTAMP);
+        jest.spyOn(Date, 'now').mockReturnValue(today);
     });
 
     afterEach(() => {
@@ -42,7 +43,7 @@ describe('Unit Test: Privacy Streak Logic', () => {
             cb({ 
                 streak_data: { 
                     count: 5, 
-                    last_visit: YESTERDAY_DAYS 
+                    last_visit: yesterday_days 
                 } 
             });
         });
@@ -63,7 +64,7 @@ describe('Unit Test: Privacy Streak Logic', () => {
             cb({ 
                 streak_data: { 
                     count: 10, 
-                    last_visit: TWO_DAYS_AGO_DAYS 
+                    last_visit: two_days_ago 
                 } 
             });
         });

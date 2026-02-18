@@ -45,6 +45,7 @@ const SettingsDropdown = ({
                 className={`p-2 rounded-full transition-colors ${
                     is_settings_open ? 'bg-sky-800 text-white' : 'text-gray-400 hover:text-white hover:bg-sky-600'
                 }`}
+                aria-label='Settings'
             >
                 <Settings size={36} />
             </button>

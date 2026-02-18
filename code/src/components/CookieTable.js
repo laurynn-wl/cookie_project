@@ -132,6 +132,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                         className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer" 
                         checked={is_toggled}
                         onChange={(e) => on_toggle(category, e.target.checked)}
+                        aria-label={category}
                     />
                     <label 
                     htmlFor={`banner-toggle-${category}`} 
