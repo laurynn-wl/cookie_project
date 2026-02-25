@@ -6,6 +6,7 @@ import { cookie_finder_in_db } from './cookieFinder';
 import { security_explanation } from '../data/DashboardExplanations';   
 
 
+
 const year_in_seconds = 31536000;
 
 /** 
@@ -192,9 +193,10 @@ export const get_insights = (label) => {
  * @param {boolean} is_tech_info 
  * @returns {Array} An array of analysis points with title, description, and color based on the cookie's security attributes
  */
-export const get_detailed_analysis = (cookie, is_tech_info = false) => {
+export const get_detailed_analysis = (cookie, is_tech_info = false, current_site_host) => {
     const analysis = [];
     const view = is_tech_info ? 'technical' : 'simple'
+    
 
     if (!cookie.httpOnly) {
         analysis.push({
@@ -464,3 +466,4 @@ export const calculate_site_privacy_score = (cookies) => {
 
 
 };
+

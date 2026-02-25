@@ -104,11 +104,11 @@ const Category_panel = ({ cookies, is_tech_info }) => {
             <div className ="flex items-center gap-2 mb-4">
                 <h2 className="text-2xl font-bold text-white">Cookie Categories</h2>
                 <div className="infotip flex items-center">
-                     {/* When hovering over the info icon, a tooltip appears explaining how the privacy score is calculated */}
+                     {/* When hovering over the info icon, a tooltip appears explaining the category panel*/}
                 <BadgeInfo size={20} className="w-5 h-5 text-gray-300 cursor-help" />
                 <span className="infotiptext">
                         <p className='block font-bold text-center text-sm mb-3 text-white border-b border-gray-600 pb-2'>
-                        This panel breaks down cookies intop their functional categories.
+                        This panel breaks down cookies into their functional categories.
                         </p>
 
                         <p className='leading-relaxed text-xs text-left'>

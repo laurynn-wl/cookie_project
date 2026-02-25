@@ -181,6 +181,14 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                 </div>
             </div>
             
+            <div className="mb-6 bg-cyan-950/30 border border-cyan-500/30 p-4 rounded-lg flex gap-3 items-start">
+                <BadgeInfo className="text-cyan-400 shrink-0 mt-0.5" size={18} />
+                <p className="text-sm text-gray-300 leading-relaxed">
+                    <strong className="text-cyan-400 font-semibold uppercase text-xs tracking-tighter mr-1">Pro Tip:</strong> 
+                    To delete cookies scroll to the bottom of this table and click
+                    <span className="italic"> "Delete Selected".</span>
+                </p>
+            </div>
             
             <div className="overflow-x-auto">
                 <table className="w-full text-left table-auto">

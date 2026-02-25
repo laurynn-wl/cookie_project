@@ -62,10 +62,11 @@ function CookieDashboard() {
 
                     // Extract website name to display on the dashboard in a user friendly format
                     const site_url = result.cookies_from_site[0];
+                    
                     if (site_url.domain) {
-                        const domain = site_url.domain.startsWith('.') 
-                            ? site_url.domain.substring(1) 
-                            : site_url.domain;
+                        let domain = site_url.domain.toLowerCase();
+                        if (domain.startsWith('.')) domain = domain.substring(1);
+                       // if (domain.startsWith('www.')) domain = domain.substring(4);
                         set_current_site(domain);
                     }
 
@@ -88,13 +89,29 @@ function CookieDashboard() {
     }, []); 
 
     // Show help centre when first visiting the website 
+    // useEffect(() => {   
+    //     const has_seen_onboarding = chrome.storage.local.get('has_seen_onboarding');
+    //     if (!has_seen_onboarding) {
+    //         set_helpCentre(true);
+    //         chrome.storage.local.set('has_seen_onboarding', 'true');
+    //     }
+    // }, []);
+
     useEffect(() => {   
-        const has_seen_onboarding = localStorage.getItem('has_seen_onboarding');
-        if (!has_seen_onboarding) {
+    // 1. Ask Chrome for the data (this is async)
+    chrome.storage.local.get(['has_seen_onboarding'], (result) => {
+        
+        // 2. Check the result from the callback
+        if (!result.has_seen_onboarding) {
             set_helpCentre(true);
-            localStorage.setItem('has_seen_onboarding', 'true');
+            
+            // 3. Use .set (not .get) to save the flag for next time
+            chrome.storage.local.set({ has_seen_onboarding: true }, () => {
+                console.log("Onboarding flag saved to storage.");
+            });
         }
-    }, []);
+    });
+}, []);
 
     // Calculates the privacy score whenever the cookies state changes
     const score_data = useMemo(() => {
@@ -220,7 +237,7 @@ function CookieDashboard() {
     // 
     return (
         // Sets the dashboards max width to a certain size and centers it on the screen 
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
             {/* Container for the dashboard */}
             <div className="bg-gray-900 border border-gray-700 shadow-2xl rounded-xl p-6 md:p-8">
                 <header className="border-b border-gray-700 pb-4 mb-6 flex justify-between items-start">
@@ -312,6 +329,7 @@ function CookieDashboard() {
                 isOpen={!!cookie_id}
                 onClose={() => set_cookie_id(null)}
                 is_tech_info={is_tech_info}
+                current_site_domain={current_site}
             />
 
             <HelpCentre 

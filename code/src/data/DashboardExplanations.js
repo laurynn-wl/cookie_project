@@ -64,7 +64,22 @@ export const security_explanation = {
             simple: "This cookie is set safely and does not pose security or privacy risks.",
             technical: "This cookie has all recommended security attributes.",
         }
-    } 
+    },
+    firstParty:{
+        title: "Cookie Party",
+        description:{
+            simple:"This cookie is set by the website you are currently visiting. It usually remembers your settings or login details, but the site can also use it to track your behaviour.",
+            technical: "The domain attribute matches the host of the current URL. These cookies are typically more secure than third-party but is still capable  of storing PII (Personally Identifiable Information) or analytial identifiers.",
+        }
+    },
+    thirdParty:{
+        title: "Cookie Party",
+        description:{
+            simple: " This cookie belongs to a different website, such as an advertising or social media company. It is often used to follow you across different sites to build a profile of your interests.",
+            technical: " The domain attribute doesnt match the host of the current URL. These are frequently used for cross site tracking.",
+        }
+    }
+
 }
 
 export const category_colour = {

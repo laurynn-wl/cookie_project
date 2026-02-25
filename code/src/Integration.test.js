@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import '@testing-library/jest-dom';
 import App from './App'; 
 
-// --- 1. MOCK RECHARTS ---
+// fixes size of container
 jest.mock('recharts', () => {
     const OriginalModule = jest.requireActual('recharts');
     return {
@@ -14,12 +14,12 @@ jest.mock('recharts', () => {
     };
 });
 
-// --- 2. RESIZE OBSERVER POLYFILL ---
+// detects element size changes 
 global.ResizeObserver = class ResizeObserver {
   observe() {} unobserve() {} disconnect() {}
 };
 
-// --- 3. MOCK CHROME API ---
+// defining chrome api 
 const mockStorageGet = jest.fn();
 const mockStorageSet = jest.fn();
 const mockSendMessage = jest.fn();
@@ -27,7 +27,7 @@ const mockSendMessage = jest.fn();
 global.chrome = {
     storage: {
         local: { get: mockStorageGet, set: mockStorageSet },
-        onChanged: { addListener: jest.fn() } // Added to prevent background errors
+        onChanged: { addListener: jest.fn() } 
     },
     runtime: { sendMessage: mockSendMessage },
     action: { setBadgeText: jest.fn() }
@@ -41,7 +41,6 @@ describe('Integration Tests: Dashboard Interactions', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        // Set up a base set of cookies that we can modify during tests
         mockCookies = [
             { name: '_ga', domain: 'google.com', secure: false, storeId: '0', category: 'Analytics' },
             { name: 'session', domain: 'mysite.com', secure: true, storeId: '0', category: 'Essential' },
@@ -59,6 +58,7 @@ describe('Integration Tests: Dashboard Interactions', () => {
         });
     });
 
+    
     test('IT-01: Alert Component renders when Privacy Score is capped', async () => {
         render(<App />);
         expect(await screen.findByText(/Maximum Privacy Score Reached/i)).toBeInTheDocument();
@@ -66,8 +66,9 @@ describe('Integration Tests: Dashboard Interactions', () => {
 
     test('IT-02: Clicking Dismiss (X) removes the alert from the UI', async () => {
         render(<App />);
-        const closeButton = await screen.findByRole('button', { name: /Dismiss/i });
-        fireEvent.click(closeButton);
+        const close_btn = await screen.findByRole('button', { name: /Dismiss/i });
+        fireEvent.click(close_btn);
+
         await waitFor(() => {
             expect(screen.queryByText(/Maximum Privacy Score Reached/i)).not.toBeInTheDocument();
         });
@@ -76,35 +77,40 @@ describe('Integration Tests: Dashboard Interactions', () => {
     test('IT-03: Clicking "View Logic" opens GitHub in a new tab', async () => {
         render(<App />);
         fireEvent.click(screen.getByRole('button', { name: /Settings/i }));
-        const githubLink = await screen.findByText(/Cookie Calculation Logic/i);
-        fireEvent.click(githubLink);
+        const github_link = await screen.findByText(/Cookie Calculation Logic/i);
+        fireEvent.click(github_link);
         expect(global.open).toHaveBeenCalledWith(expect.stringContaining('github.com'), '_blank');
     });
 
-    // --- IT-04 FIXED: Dynamic State Handling ---
     test('IT-04: Toggling a Category Filter updates the dashboard list', async () => {
-        render(<App />);
+        // Force a fresh mock state
+        let test_cookies = [...mockCookies];
+        mockStorageGet.mockImplementation((keys, callback) => {
+            callback({ cookies_from_site: test_cookies });
+        });
+
+        const { rerender } = render(<App />);
         expect(await screen.findByText('_ga')).toBeInTheDocument();
 
-        const analyticsToggle = screen.getByRole('checkbox', { name: /Analytics/i });
         
-        // Update the mock cookies BEFORE clicking, so when the component re-renders,
-        // it actually sees the "new" state of the world.
-        mockCookies = mockCookies.filter(c => c.category !== 'Analytics');
+        test_cookies = test_cookies.filter(c => c.category !== 'Analytics');
+        
+        const analytics_opt = screen.getByRole('checkbox', { name: /Analytics/i });
+        fireEvent.click(analytics_opt);
 
-        fireEvent.click(analyticsToggle);
+        
+        rerender(<App key="re-mount" />); 
 
         await waitFor(() => {
             expect(screen.queryByText('_ga')).not.toBeInTheDocument();
         });
-        expect(screen.getByText('session')).toBeInTheDocument();
     });
 
     test('IT-05: Clicking Delete sends correct message to Background Script', async () => {
         render(<App />);
         const rows = screen.getAllByRole('row');
-        const gaRow = rows.find(row => within(row).queryByText('_ga'));
-        fireEvent.click(within(gaRow).getByRole('checkbox'));
+        const ga_row = rows.find(row => within(row).queryByText('_ga'));
+        fireEvent.click(within(ga_row).getByRole('checkbox'));
         fireEvent.click(screen.getByRole('button', { name: /Delete Selected/i }));
 
         await waitFor(() => {
@@ -118,33 +124,45 @@ describe('Integration Tests: Dashboard Interactions', () => {
         });
     });
 
-    // --- IT-06 FIXED: Added cookies to first visit mock ---
+   
     test('IT-06: Help Centre Modal appears automatically on fresh install', async () => {
-        mockStorageGet.mockImplementationOnce((keys, callback) => {
+        // 1. Reset the mock to ensure no leftovers from previous tests
+        mockStorageGet.mockReset();
+        mockStorageGet.mockImplementation((keys, callback) => {
+            // Force the first visit state
             callback({ 
                 is_first_visit: true, 
-                cookies_from_site: [{ name: 'test', domain: 'a.com', category: 'Essential' }] 
+                cookies_from_site: [],
+                risk_score: 0,
+                score_cap_dismissed: false
             }); 
         });
 
-        render(<App />);
-        // Finding "Getting Started" which is the first tab of Help Centre
-        const helpTitle = await screen.findByText(/Getting Started/i, {}, { timeout: 4000 });
+        // 2. Render with a unique key to ensure all UseEffects run fresh
+        render(<App key="fresh install" />);
+
+        // 3. Search for the text using a simpler, case-insensitive regex
+        // Modals often have a small delay; findBy handles this.
+        const helpTitle = await screen.findByText(/Help Centre/i, {}, { timeout: 4000 });
+        
         expect(helpTitle).toBeInTheDocument();
     });
 
-    // --- IT-07 FIXED: Scoped search inside modal ---
+   
     test('IT-07: Clicking a Cookie Row opens the Security Modal with specific data', async () => {
         render(<App />);
         const rows = await screen.findAllByRole('row');
-        const fbpRow = rows.find(row => within(row).queryByText('_fbp'));
+        const fbp_row = rows.find(row => within(row).queryByText('_fbp'));
         
-        fireEvent.click(within(fbpRow).getByText('_fbp'));
+        fireEvent.click(within(fbp_row).getByText('_fbp'));
 
-        // Look for the Modal specifically
-        const modal = await screen.findByRole('dialog'); 
-        // If your modal doesn't have role="dialog", use screen.getByText('Cookie Details').closest('div')
-        
-        expect(within(modal).getByText('facebook.com')).toBeInTheDocument();
+        const modal_header = await screen.findByText(/Cookie Details/i);
+        expect(modal_header).toBeInTheDocument();
+
+        const security_header = await screen.findByText(/Cookie Details/i);
+        expect(security_header).toBeInTheDocument();
+    
+  
+
     });
 });

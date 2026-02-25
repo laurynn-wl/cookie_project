@@ -50,6 +50,9 @@ const HelpCentre = ({ isOpen, onClose }) => {
                         <p className="text-gray-300 leading-relaxed text-base">
                             Welcome to the Cookie Dashboard! This tool analyses the cookies on the current website you are visiting and provides insights on how your privacy may be affected.
                         </p>
+                        <p className="text-yellow-400 leading-relaxed text-base">
+                           <strong> If you want to return to this help centre, press the setting icon at the top right of the page. </strong>
+                        </p>
                     </div>
 
                     <div className='space-y-3'>
@@ -103,10 +106,43 @@ const HelpCentre = ({ isOpen, onClose }) => {
                     <div> 
                         <h3 className="text-2xl font-bold text-white mb-4">Understanding your Score</h3>
                         <p className="text-gray-300 leading-relaxed text-base">
-                            The privacy score provides an overview of how the cookies on this website may impact your privacy. A lower score indicates a higher number of potentially harmful cookies.
-                        </p>
+                            The privacy score provides an overview of how the cookies on this website may impact your privacy/security. A lower score indicates a higher number of potentially harmful cookies.                        </p>
+                        {/* <p className="text-yellow-300 leading-relaxed text-base mt-2">
+                            If you want to increase your score, you should consider removing <strong>tracking cookies</strong> 
+                            (if you don't want persistent tracking and personalised ads) and also removing any <strong>high-risk </strong> 
+                             non-essential/unknown cookies.
+                        </p> */}
                     </div>
 
+                    <div className="space-y-3">
+                        <p className="text-gray-300 leading-relaxed text-sm">
+                            To improve your privacy score, focus on these two key actions:
+                        </p>
+                        <ul className="space-y-2">
+                            <li className="flex items-start gap-2 text-sm">
+                                <span className="text-sky-400 mt-1">•</span>
+                                <span className="text-gray-200">
+                                    <strong className="text-white">Remove Tracking Cookies:</strong> Stop persistent monitoring and personalised ads.
+                                </span>
+                            </li>
+                            <li className="flex items-start gap-2 text-sm">
+                                <span className="text-red-400 mt-1">•</span>
+                                <span className="text-gray-200">
+                                    <strong className="text-white">Clear High-Risk Cookies:</strong> Delete any non-essential or unknown cookies with security vulnerabilities.
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+    
+                    <div className="bg-gray-900 border-l-4 border-cyan-500 p-4 rounded-r-xl">
+                        <h4 className="text-cyan-400 font-bold text-sm mb-1 flex items-center gap-2">
+                            <AlertTriangle size={18} />
+                            Score Capping Alert
+                        </h4>
+                        <p className="text-sm text-gray-300 leading-relaxed">
+                            Scores may be capped at 45 or 60. Deleting individual cookies won't improve the score while critical security vulnerabilities exist.
+                        </p>
+                    </div>
                     <div className='space-y-3'>
 
                         <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
@@ -216,7 +252,7 @@ const HelpCentre = ({ isOpen, onClose }) => {
                             <div>
                                 <h4 className="text-white font-bold text-sm mb-1">Deleting Selected Cookies</h4>
                                 <p className="text-sm text-gray-400 leading-relaxed">
-                                    Once you have selected the cookies you want to delete, click the <strong>Delete Selected</strong> button at the bottom of the Active Cookie Table to remove them from your browser.
+                                    Once you have selected the cookies you want to delete, click the <strong>Delete Selected button at the bottom of the Active Cookie Table to remove them from your browser.</strong>
                                 </p>
                             </div>
                         </div>

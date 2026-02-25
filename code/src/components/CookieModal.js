@@ -2,14 +2,14 @@ import { X } from 'lucide-react';
 import { get_detailed_analysis } from '../utils/cookieUtils'; 
 
 /**
- * Dsiplays information about a selected cookie
+ * Diplays information about a selected cookie
  * e.g name, category, domain, expiration and security attributes 
  */
-const CookieModal = ({ cookie, isOpen, onClose, is_tech_info }) => {
+const CookieModal = ({ cookie, isOpen, onClose, is_tech_info, current_site_domain }) => {
     if (!isOpen || !cookie) return null;
 
     // Run detailed analysis on the selected cookie - output depends on which view the dashboard is in
-    const analysed_cookies = get_detailed_analysis(cookie, is_tech_info);
+    const analysed_cookies = get_detailed_analysis(cookie, is_tech_info, current_site_domain);
 
     return (
         
