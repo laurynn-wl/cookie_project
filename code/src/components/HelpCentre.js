@@ -44,7 +44,7 @@ const HelpCentre = ({ isOpen, onClose }) => {
             label: 'Getting Started',
             icon: PlayCircle,
             content: (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300"> 
                     <div>
                         <h3 className="text-2xl font-bold text-white mb-4">Getting Started</h3>
                         <p className="text-gray-300 leading-relaxed text-base">
@@ -347,6 +347,7 @@ const HelpCentre = ({ isOpen, onClose }) => {
                     <div className="w-1/3 border-r border-gray-700 flex flex-col bg-gray-800/30">
                         {tabs.map((tab) => (
                             <button
+                                aria-label='Help Centre Open'
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                

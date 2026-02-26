@@ -143,7 +143,7 @@ describe('Integration Tests: Dashboard Interactions', () => {
 
         // 3. Search for the text using a simpler, case-insensitive regex
         // Modals often have a small delay; findBy handles this.
-        const helpTitle = await screen.findByText(/Help Centre/i, {}, { timeout: 4000 });
+        const helpTitle = await screen.findByText(/Welcome to the Cookie Dashboard!/i, {}, { timeout: 4000 });
         
         expect(helpTitle).toBeInTheDocument();
     });
