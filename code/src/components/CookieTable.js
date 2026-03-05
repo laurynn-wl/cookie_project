@@ -57,6 +57,9 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
 
     // Sorts cookies based on column and direction 
     const sorted_rows = useMemo(() => {
+
+        console.time(`PT-02: Scan Speed (Daily Mail)`);
+
         let sorted_cookies = [...filtered_cookies];
         if (searchTerm.key !== null){
             sorted_cookies.sort((a,b) => {
@@ -78,6 +81,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                 return 0;
             });
         }
+        console.timeEnd(`PT-02: Scan Speed (Daily Mail)`);
         return sorted_cookies;
     }, [filtered_cookies, searchTerm]);
 

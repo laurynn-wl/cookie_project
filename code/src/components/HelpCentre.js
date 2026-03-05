@@ -88,7 +88,7 @@ const HelpCentre = ({ isOpen, onClose }) => {
                         <div>
                             <h4 className="text-white font-bold text-sm mb-1">Understand the Risks</h4>
                             <p className="text-sm text-gray-400 leading-relaxed">
-                                Learn about the privacy risks associated with different types if cookies and how they impact your online safety. 
+                                Learn about the privacy risks associated with different types of cookies and how they impact your online safety. 
                             </p>
                         </div>
                     </div>
@@ -279,7 +279,7 @@ const HelpCentre = ({ isOpen, onClose }) => {
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                     <h3 className="text-2xl font-bold text-white mb-4"> Tailoring your Dashboard Experience</h3>
                     <p className="text-gray-300 leading-relaxed text-base">
-                        You can switch the dashboard to <strong>Technical View</strong> to see a more detailed information.
+                        You can switch the dashboard to <strong>Technical View</strong> to see more detailed information.
                     </p>
 
                     <div className='space-y-3'>

@@ -88,7 +88,7 @@ function CookieDashboard() {
 
     }, []); 
 
-    // Show help centre when first visiting the website 
+    // //Show help centre when first visiting the website 
     // useEffect(() => {   
     //     const has_seen_onboarding = chrome.storage.local.get('has_seen_onboarding');
     //     if (!has_seen_onboarding) {
@@ -132,13 +132,29 @@ function CookieDashboard() {
     }, [cookies, cookie_id]);
 
     // Shows the popup notififcation when a cookie has been accepted, rejected or deleted 
-    const show_popup = useCallback((message) => {
-        set_message(message);
-        setTimeout(() => set_message(''), 2000);
+    // const show_popup = useCallback((message) => {
+    //     const warning = message.toLowerCase().includes('skipped') || message.toLowerCase().includes('deleted');
+    //     const title = warning ? "Action Restricted" : "Action Completed";
+    //     set_message({text: message, title: title, warning: warning});
+    //     setTimeout(() => set_message(''), 3000);
+    // }, []);
+
+    const show_popup = useCallback((config) => {
+        // If it's a string, convert it to our new object format
+        const newPopup = typeof config === 'string' 
+            ? { title: "Notification", message: config, warning: false } 
+            : config;
+
+        set_message(newPopup);
+        // Reset to null (not empty string) so the UI knows it's gone
+        setTimeout(() => set_message(null), 3000);
     }, []);
 
     // Selects all the cookies of that category from the active cookie list of the toggle has been selected 
     const handle_toggles = useCallback((category, is_checked) => {
+
+        console.time(`PT-05: Toggle ${category}`);
+
         set_active_categories(prev => {
             if (is_checked && !prev.includes(category)) {
                 return [...prev, category];
@@ -148,6 +164,12 @@ function CookieDashboard() {
             }
             return prev;
         });
+    
+        requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            console.timeEnd(`PT-05: Toggle ${category}`);
+        });
+    });
 
         // Finds all the cookie ids that belong to that category
         const category_ids = cookies
@@ -169,7 +191,11 @@ function CookieDashboard() {
     const handle_selection = useCallback((button, ids) => {
         // If there are no cookies selected but the button has been pressed - popup to inform the users to select cookies
         if (ids.length === 0) {
-            show_popup(`Please select cookies to ${button.toLowerCase()}.`);
+            show_popup({
+                title: "No Cookies Selected",
+                message:`Please select cookies to ${button.toLowerCase()}.`,
+                warning: true
+        });
             return;
         }
         
@@ -184,7 +210,11 @@ function CookieDashboard() {
             const skipped_count = ids.length - safe_ids.length;
           
             if (safe_ids.length === 0) {
-                show_popup(`No cookies deleted. Essential/Unknown cookies cannot be deleted.`);
+                show_popup({
+                    title: "Action Restricted",
+                    message: `No cookies deleted. Essential and some Unknown cookies cannot be deleted.`,
+                    warning: true
+            });
                 return;
             }
 
@@ -219,15 +249,27 @@ function CookieDashboard() {
 
                 
                 if (skipped_count > 0) {
-                    show_popup(` ${button}d ${safe_ids.length} cookies. Skipped ${skipped_count} essential cookie(s).`);
+                    show_popup({
+                        title: "Action Partially Restricted",
+                        message: ` ${button}d ${safe_ids.length} cookies. Skipped ${skipped_count} essential cookie(s).`,
+                        warning: true
+                    });
                 }
                 else{ 
-                    show_popup(`${button}d ${safe_ids.length} cookie(s).`);
+                    show_popup({
+                        title: "Action Completed",
+                        message: `${button}d ${safe_ids.length} cookie(s).`,
+                        warning: false
+                    });
                 }
             }, 300);
         } else { 
             // If the button is accept - no rows are removed so no animation 
-            show_popup(`Accepted ${ids.length} cookie(s).`);
+            show_popup({
+                title: "Action Completed",
+                message: `Accepted ${ids.length} cookie(s).`,
+                warning: false
+            });
             set_active_categories([]);
             set_selected_ids([]);
         }
@@ -316,12 +358,43 @@ function CookieDashboard() {
             </div>
             
             {/* styling for popup message for accepting/rejecting/deleting cookies */}
-            <div 
+            {/* <div 
                 id="popup_message" 
                 className={`fixed bottom-10 right-10 bg-gray-700 text-white py-3 px-5 rounded-lg shadow-xl transition-all duration-300 ${popup_message ? '' : 'translate-y-20 opacity-0'}`}
             >
                 {popup_message}
+            </div> */}
+
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center pointer-events-none transition-all duration-300 ${popup_message ? 'opacity-100' : 'opacity-0'}`}>
+            {/* Use optional chaining (?.) so it doesn't crash when popup_message is null */}
+            <div 
+                className={`bg-gray-800 border-2 p-6 rounded-2xl flex flex-col items-center gap-4 transform transition-all duration-500 shadow-2xl
+                ${popup_message?.warning ? 'border-amber-500 shadow-amber-500/20' : 'border-sky-500 shadow-sky-500/20'}
+                ${popup_message ? 'scale-100 translate-y-0' : 'scale-90 translate-y-4'}`}
+            >
+                {/* Icon changes based on warning status */}
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 
+                    ${popup_message?.warning ? 'bg-amber-500/20 border-amber-500 text-amber-500' : 'bg-sky-500/20 border-sky-400 text-sky-400'}`}>
+                    {popup_message?.warning ? '!' : '✓'}
+                </div>
+
+                <div className="text-center">
+                    <h3 className="text-white font-bold text-lg mb-1 tracking-tight">
+                        {popup_message?.title}
+                    </h3>
+                    <p className="text-gray-300 text-sm max-w-[240px] leading-relaxed">
+                        {popup_message?.message}
+                    </p>
+                </div>
+
+                {/* Progress Bar Color Sync */}
+                <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden mt-2">
+                    <div className={`h-full transition-all duration-[3000ms] linear ${popup_message ? 'w-full' : 'w-0'} 
+                        ${popup_message?.warning ? 'bg-amber-500' : 'bg-sky-500'}`} 
+                    />
+                </div>
             </div>
+        </div>
 
             {/* Cookie description pop up */}
             <CookieModal 
