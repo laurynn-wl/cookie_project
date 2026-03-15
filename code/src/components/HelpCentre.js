@@ -1,6 +1,6 @@
 /*global chrome */
 import React, { useState, useEffect, useRef } from 'react';
-import { X, PlayCircle, Shield, MousePointerClick, ChevronRight, ShieldAlert, Search, CheckSquare, ToggleLeft, Trash, AlertTriangle, Glasses, Eye, Settings, TrendingDown, Github} from 'lucide-react';
+import { X, PlayCircle, Shield, GlobeLock ,MousePointerClick, ChevronRight, ShieldAlert, Search, CheckSquare, ToggleLeft, Trash, AlertTriangle, HatGlasses, Eye, Settings, TrendingDown, Computer, ChartNoAxesCombined, Lock, Rss, Send, Hourglass} from 'lucide-react';
 
 /**
  * Displays guidance and explanations for dashboard 
@@ -48,7 +48,7 @@ const HelpCentre = ({ isOpen, onClose }) => {
                     <div>
                         <h3 className="text-2xl font-bold text-white mb-4">Getting Started</h3>
                         <p className="text-gray-300 leading-relaxed text-base">
-                            Welcome to the Cookie Dashboard! This tool analyses the cookies on the current website you are visiting and provides insights on how your privacy may be affected.
+                            Welcome to the Cookie Dashboard! This tool analyses the cookies stored by the website you are currently visiting and provides insights on how your privacy may be affected.
                         </p>
                         <p className="text-yellow-400 leading-relaxed text-base">
                            <strong> If you want to return to this help centre, press the setting icon at the top right of the page. </strong>
@@ -93,6 +93,19 @@ const HelpCentre = ({ isOpen, onClose }) => {
                         </div>
                     </div>
                     
+                    <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 items-center flex gap-4">
+                        <div className="bg-green-500/20 h-12 w-12 p-3 rounded-lg flex items-center justify-center text-green-400">
+                            <GlobeLock size={24} />
+                        </div>
+                        <div>
+                            <h4 className="text-white font-bold text-sm mb-1">Privacy Tips</h4>
+                            <p className="text-sm text-gray-400 leading-relaxed">
+                                The dashboard provides a <strong> Privacy Tip</strong> under the cookie category panel. 
+                                This tip chaages each time you open the dashboard and gives you quick advice/tips on cookies.
+                            </p>
+                        </div>
+                    </div>
+
                 </div>
                 </div>
             )
@@ -106,12 +119,8 @@ const HelpCentre = ({ isOpen, onClose }) => {
                     <div> 
                         <h3 className="text-2xl font-bold text-white mb-4">Understanding your Score</h3>
                         <p className="text-gray-300 leading-relaxed text-base">
-                            The privacy score provides an overview of how the cookies on this website may impact your privacy/security. A lower score indicates a higher number of potentially harmful cookies.                        </p>
-                        {/* <p className="text-yellow-300 leading-relaxed text-base mt-2">
-                            If you want to increase your score, you should consider removing <strong>tracking cookies</strong> 
-                            (if you don't want persistent tracking and personalised ads) and also removing any <strong>high-risk </strong> 
-                             non-essential/unknown cookies.
-                        </p> */}
+                            The privacy score provides an overview of how the cookies on this website may impact your privacy/security. A lower score indicates a higher number of potentially harmful cookies.                       
+                        </p>
                     </div>
 
                     <div className="space-y-3">
@@ -185,26 +194,110 @@ const HelpCentre = ({ isOpen, onClose }) => {
                         </div>
                     </div>
                 </div>
-
                 
                 <div className="pt-2">
                     <button 
                         onClick={open_github}
                         className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg border border-gray-600 transition-all group"
                     >
-                        <Github size={20} />
+                        <Computer size={20} />
                         <span className='text-base font-bold'>View Full Calculation Logic on GitHub</span>
                     </button>
-                </div>
-
-
-
+                    </div>
                     </div>
 
 
                 </div>
             )
         },
+        {
+    id: 'security',
+    label: 'Security Analysis',
+    icon: ChartNoAxesCombined,
+    content: (
+        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300"> 
+                    <div>
+                        <h3 className="text-2xl font-bold text-white mb-4">Understanding Cookie Security Attributes</h3>
+                        <p className="text-gray-300 leading-relaxed text-base">
+                            Each cookie has security attributes that control how it can be accessed and its vulnerability to attacks. 
+                            The dashboard highlights cookies with missing or insecure attributes, which can pose risks to your privacy and security.
+                        </p>
+                    </div>
+
+                    <div className='space-y-3'>
+
+                    <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 items-center flex gap-4">
+                        <div className="bg-slate-500/20 h-12 w-12 p-3 rounded-lg flex items-center justify-center text-slate-400">
+                                <Lock size={24} />
+                            </div>
+                            <div>
+                                <h4 className="text-white font-bold text-sm mb-1">Secure</h4>
+                                <p className="text-sm text-gray-400 leading-relaxed">
+                                    If the <strong>Secure</strong> attribute is set, cookies are only sent over encrypted connections (HTTPS).
+                                </p>
+                            </div>
+                    </div>
+
+                    <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 items-center flex gap-4">
+                            <div className="bg-cyan-500/20 h-12 w-12 p-3 rounded-lg flex items-center justify-center text-cyan-400">
+                                <Rss size={24} /> 
+                            </div>
+                            <div>
+                                <h4 className="text-white font-bold text-sm mb-1">HttpOnly</h4>
+                                <p className="text-sm text-gray-400 leading-relaxed">
+                                    If the <strong>HttpOnly</strong> attribute is set, it protects cookies from being read by potentially harmful scripts. 
+                                </p>
+                            </div>
+                        </div>
+
+                    <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 items-center flex gap-4">
+                        <div className="bg-orange-500/20 h-12 w-12 p-3 rounded-lg flex items-center justify-center text-orange-400">
+                            <Send size={24} />
+                        </div>
+                        <div>
+                            <h4 className="text-white font-bold text-sm mb-1">SameSite</h4>
+                            <p className="text-sm text-gray-400 leading-relaxed">
+                                If the <strong>SameSite</strong> attribute is not set to 'Strict' or 'Lax', cookies may be sent to unrelated websites. 
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 items-center flex gap-4">
+                        <div className="bg-emerald-500/20 h-12 w-12 p-3 rounded-lg flex items-center justify-center text-emerald-400">
+                            <MousePointerClick size={24} />
+                        </div>
+                        <div>
+                            <h4 className="text-white font-bold text-sm mb-1">HostOnly</h4>
+                            <p className="text-sm text-gray-400 leading-relaxed">
+                                If the <strong>HostOnly</strong> attribute is not set, cookies may be accessible to subdomains.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 items-center flex gap-4">
+                        <div className="bg-indigo-500/20 h-12 w-12 p-3 rounded-lg flex items-center justify-center text-indigo-400">
+                            <Hourglass size={24} />
+                        </div>
+                        <div>
+                            <h4 className="text-white font-bold text-sm mb-1">Expiration</h4>
+                            <p className="text-sm text-gray-400 leading-relaxed">
+                                If the <strong>Expiration</strong> attribute is set to a long duration, it allows websites to track you for extended periods. 
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-lg flex gap-3">
+                        <AlertTriangle className="text-yellow-500 shrink-0" size={20} />
+                        <p className="text-xs text-yellow-200/80 leading-relaxed">
+                            <strong>How does this affect my privacy score?</strong><br/>
+                            If cookies any cookies are missing or have insecure attributes, your privacy score will be capped at 45 or 60 depending on the severity of the vulnerability.
+                        </p>
+                    </div>
+
+                </div>
+                </div>  
+    )
+},
         {
             id: 'manage',
             label: 'Managing Cookies',
@@ -274,7 +367,7 @@ const HelpCentre = ({ isOpen, onClose }) => {
         {
             id: 'tech',
             label: 'Technical View',
-            icon: Glasses,
+            icon: HatGlasses,
             content: (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                     <h3 className="text-2xl font-bold text-white mb-4"> Tailoring your Dashboard Experience</h3>

@@ -94,7 +94,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
 
     // Changes the icon based on the sort 
     const get_arrow_icon = (columnName) => {
-        if (searchTerm.key !== columnName) return (<ArrowUpDown size={18} className="inline-block ml-1 text-gray-600" />);
+        if (searchTerm.key !== columnName) return (<ArrowUpDown size={18} className="inline-block ml-1 text-gray-300" />);
         if (searchTerm.direction === 'ascending') return (<ArrowUp size={18} className="inline-block ml-1 text-sky-400" />);
         return (<ArrowDown size={18} className="inline-block ml-1 text-sky-400" />);
     }
