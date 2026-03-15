@@ -25,6 +25,7 @@ function CookieDashboard() {
     const [isBannerOpen, setIsBannerOpen] = useState(true);
     const [delete_cookies, set_deleted_cookies] = useState([]); 
     const [selected_ids, set_selected_ids] = useState([]);
+    const [deleted_cookies_ids, set_deleted_cookies_ids] = useState([]);
     const [current_site, set_current_site] = useState([]);
     const [is_settings_open, set_is_settings_open] = useState(false);
     const [is_helpCentre_open, set_helpCentre] = useState(false);
@@ -59,8 +60,13 @@ function CookieDashboard() {
                 if (result.cookies_from_site && result.cookies_from_site.length > 0) {
                     console.log("Real Cookies Found:", result.cookies_from_site);
                     const real_data = map_chrome_cookies(result.cookies_from_site);
-                    set_cookies(real_data);
+                    chrome.storage.local.get({['deleted_cookies_ids']: []}, (storage) => {
+                        const deleted_ids = storage.deleted_cookies_ids;
+                        set_deleted_cookies_ids(deleted_ids);
 
+                        const filtered_data = real_data.filter(cookie => !deleted_ids.includes(cookie.id));
+                        set_cookies(filtered_data);
+                    });
                     // Extract website name to display on the dashboard in a user friendly format
                     const site_url = result.cookies_from_site[0];
                     
@@ -112,7 +118,29 @@ function CookieDashboard() {
             });
         }
     });
-}, []);
+    }, []);
+
+    useEffect(() => { 
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.get(['cookie_filters'], (result) => {
+                if (result.cookie_filters) {
+                    set_active_categories(result.cookie_filters.categories || []);
+                    set_active_risks(result.cookie_filters.risks || []);
+                } 
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.set({ 
+                cookie_filters: { 
+                    categories: active_categories, 
+                    risks: active_risks 
+                } 
+            });
+        }
+    }, [active_categories, active_risks]);
 
     // Calculates the privacy score whenever the cookies state changes
     const score_data = useMemo(() => {
@@ -267,6 +295,15 @@ function CookieDashboard() {
             }
 
             set_deleted_cookies(safe_ids);
+
+            const ids_to_store = safe_ids.map(c => c.id);
+
+            chrome.storage.local.get(['deleted_cookies_ids'], (storage) => {
+                const existing_ids = storage.deleted_cookies_ids || [];
+                const updated_deleted_ids = [...new Set([...existing_ids, ...ids_to_store])];
+                chrome.storage.local.set({ deleted_cookies_ids: updated_deleted_ids 
+                });
+            });
 
             // Animates the rows deleting to fade out 
             setTimeout(() => {

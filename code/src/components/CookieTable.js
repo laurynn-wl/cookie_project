@@ -113,7 +113,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                 is_selected={selected_ids.includes(cookie.id)} 
                 on_selected={handle_select_row}
                 view_info={view_info}
-                is_deleted={delete_cookies.includes(cookie.id)}
+                is_deleted={delete_cookies.some(c => c.id === cookie.id)}
             />
         ));
     }, [sorted_rows, selected_ids, handle_select_row, view_info, delete_cookies]);
