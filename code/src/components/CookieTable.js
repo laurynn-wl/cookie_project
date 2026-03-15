@@ -1,9 +1,9 @@
-import {useMemo, useCallback, useState} from 'react';
+import {useMemo, useCallback, useState, act} from 'react';
 import CookieRow from './CookieRow';
 import {Lock, BadgeInfo, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { category_data, category_colour} from '../data/mockData';
+import { category_data, category_colour, risk_colour} from '../data/mockData';
 
-const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, selected_ids, set_selected_ids, active_categories, on_toggle}) => {
+const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, selected_ids, set_selected_ids, active_categories, active_risks, on_toggle, on_risk_toggle}) => {
 
     // Current sort column and direction
     const [searchTerm, setSearchTerm] = useState ({key: null, direction: 'ascending'});
@@ -11,12 +11,19 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
     // Filters cookies based on active categoty toggle 
     const filtered_cookies = useMemo(() => {
 
+        let result = cookies; 
+
         if (active_categories.length > 0) {
-            return cookies.filter(cookie => active_categories.includes(cookie.category));
+            result = result.filter(cookie => active_categories.includes(cookie.category));
         }
-        return cookies;
+
+        if (active_risks.length > 0) {
+            result = result.filter(cookie => active_risks.includes(cookie.risk_label));   
+        }
+
+        return result;
         
-    }, [cookies, active_categories]);
+    }, [cookies, active_categories, active_risks]);
 
 
     // (de)Selects visible cookies 
@@ -147,6 +154,32 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
         );
     });
 
+    const risk_toggles = Object.keys(risk_colour).map(risk => {
+        const is_toggled = active_risks ? active_risks.includes(risk) : true;
+
+        return (
+            <div key={risk} className="flex items-center gap-3 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: risk_colour[risk] }}></span>
+                <span className="text-sm font-medium text-gray-300">{risk}</span>
+              
+                <div className="relative inline-block w-8 align-middle select-none transition duration-200 ease-in ml-1">
+                    <input 
+                        type="checkbox" 
+                        id={`risk-toggle-${risk}`} 
+                        className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer" 
+                        checked={is_toggled}
+                        onChange={(e) => on_risk_toggle(risk, e.target.checked)}
+                        aria-label={risk}
+                    />
+                    <label 
+                    htmlFor={`risk-toggle-${risk}`} 
+                    className="toggle-label block overflow-hidden h-4 rounded-full cursor-pointer bg-gray-600"
+                    ></label>
+                </div>
+            </div>
+        );
+    });
+
     return (
         <div className="lg:col-span-2 bg-gray-800 p-6 rounded-lg border border-gray-700">
             <div className ="flex items-center gap-2 mb-4">
@@ -181,6 +214,12 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                     <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider"> Select cookie Categories:</span>
                     <div className="flex flex-wrap gap-3">
                         {toggle_banner}
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-4 items-center justify-between">
+                    <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider"> Select Risk Levels:</span>
+                    <div className="flex flex-wrap gap-3">
+                        {risk_toggles}
                     </div>
                 </div>
             </div>

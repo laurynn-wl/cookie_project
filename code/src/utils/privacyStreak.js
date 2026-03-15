@@ -10,6 +10,7 @@ export const calculate_privacy_streak = (callback) => {
     // Get today's date as an integer (days since epoch)
     const today = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
 
+    // Demo code for step into cyber-events 
     // const DEMO_MODE = true; 
     // if (DEMO_MODE) {
     //     const demoStreak = { count: 30, last_visit: today };

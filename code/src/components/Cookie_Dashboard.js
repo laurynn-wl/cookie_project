@@ -19,6 +19,7 @@ function CookieDashboard() {
     // State Variables 
     const [cookies, set_cookies] = useState([]); 
     const [active_categories , set_active_categories] = useState([]);
+    const [active_risks, set_active_risks] = useState([]);  
     const [cookie_id, set_cookie_id] = useState(null);
     const [popup_message, set_message] = useState('');
     const [isBannerOpen, setIsBannerOpen] = useState(true);
@@ -187,6 +188,34 @@ function CookieDashboard() {
         });
     }, [cookies]);
 
+    // Selects all the cookies of that risk level from the active cookie list of the toggle has been selected
+    const handle_risk_toggles = useCallback((risk, is_checked) => {
+        set_active_risks(prev => {  
+            if (is_checked && !prev.includes(risk)) {
+                return [...prev, risk];
+            }
+            if (!is_checked && prev.includes(risk)) {
+                return prev.filter(c => c !== risk);
+            }
+            return prev;
+        });
+
+        // Finds all the cookie ids that belong to that risk level
+        const risk_ids = cookies
+            .filter(cookie => cookie.risk_label === risk)
+            .map(cookie => cookie.id);
+
+        set_selected_ids(prev => {
+            if (is_checked) {
+                // Add back the cookies of this risk level to the selection
+                return [...new Set([...prev, ...risk_ids])];
+            } else {
+                // Remove the cookies of this risk level from the selection
+                return prev.filter(id => !risk_ids.includes(id));
+            }
+        });
+    }, [cookies]);
+
     // Handles the user selecting cookies to accept reject and delete  
     const handle_selection = useCallback((button, ids) => {
         // If there are no cookies selected but the button has been pressed - popup to inform the users to select cookies
@@ -241,17 +270,18 @@ function CookieDashboard() {
 
             // Animates the rows deleting to fade out 
             setTimeout(() => {
-                set_cookies(prevCookies => prevCookies.filter(cookie => !ids.includes(cookie.id)));
+                set_cookies(prevCookies => prevCookies.filter(cookie => !safe_ids.some(c => c.id === cookie.id)));
                 set_deleted_cookies([]);
 
                 set_active_categories([]);
+                set_active_risks([]);
                 set_selected_ids([]);
 
                 
                 if (skipped_count > 0) {
                     show_popup({
                         title: "Action Partially Restricted",
-                        message: ` ${button}d ${safe_ids.length} cookies. Skipped ${skipped_count} essential cookie(s).`,
+                        message: ` ${button}d ${safe_ids.length} cookies. Skipped ${skipped_count} essential/unknown cookie(s).`,
                         warning: true
                     });
                 }
@@ -271,6 +301,7 @@ function CookieDashboard() {
                 warning: false
             });
             set_active_categories([]);
+            set_active_risks([]);
             set_selected_ids([]);
         }
     }, [show_popup, cookies]);
@@ -353,6 +384,8 @@ function CookieDashboard() {
                         set_selected_ids={set_selected_ids}
                         active_categories={active_categories} 
                         on_toggle={handle_toggles} 
+                        active_risks={active_risks}
+                        on_risk_toggle={handle_risk_toggles}
                     />
                 </main>
             </div>

@@ -29,3 +29,9 @@ export const category_colour = {
     Tracking: '#f87171',
     Unknown: "#9CA3AF"
 };
+
+export const risk_colour = {
+    'Low Risk': '#4ade80',
+    'Moderate Risk': '#fbbf24',
+    'High Risk': '#f87171'
+};

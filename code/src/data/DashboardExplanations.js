@@ -17,8 +17,8 @@ export const category_explanation = {
         technical: "Tracking cookies enable cross site tracking of user behaviour and are primarily used for targeted advertising, marketing analytics and user profiling.",
     }, 
     "Unknown": {
-        simple: "Unknown cookies are cookies that this dashboard couldn't confidently categorise since there is not enough information about what they are used for.",
-        technical: "Unknown cookies may not be automatically identified using the 'Open Cookies Database' or standard classification patterns.",
+        simple: "Unknown cookies are cookies that this dashboard couldn't confidently categorise since there is not enough information about what they are used for. These cookies may not be successfully deleted.",
+        technical: "Unknown cookies may not be automatically identified using the 'Open Cookies Database' or standard classification patterns. These cookies may not be successfully deleted.",
     },
 }
 
