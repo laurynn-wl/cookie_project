@@ -56,6 +56,12 @@ const info_bar = ({ privacy_score, privacy_rank, score_colour, streak, on_open_t
         <div>
             <span className="text-sm font-semibold text-gray-300 block">Privacy Streak</span>
             <div className = "flex items-center gap-2">
+                  <div className="infotip">
+                <BadgeInfo size={20} className="text-gray-300 cursor-help"/>
+                <span className="infotiptext w-96 p-4"> 
+                    Your privacy streak increases every consecutive day you open the dashboard. Keeping it up helps you maintain consistent privacy awareness!   
+                </span>
+            </div>
             <span className="text-2xl font-semibold text-green-400">
                 {streak} {streak === 1 ? 'Day' : 'Days'}
             </span>
@@ -71,6 +77,8 @@ const info_bar = ({ privacy_score, privacy_rank, score_colour, streak, on_open_t
                 <Trophy size={24} className="text-yellow-500 group-hover:scale-110 transition-transform" />
             </button>
             </div>
+           
+
 
         </div>
     </div>
