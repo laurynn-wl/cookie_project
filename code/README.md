@@ -46,9 +46,11 @@ Follow these steps to load the extension into Google Chrome.
     In the top right corner of the Extensions page, locate the Developer mode toggle and switch it to ON. 
 
 4. **Load the Unpacked Extension**
-    1. Click the Load unpacked button that appears in the top left.
-    2. In the file picker, navigate to your project's root directory.
-    3. Select the build folder (created in Step 1) and click Open/Select.
+    <ol>
+        <li> Click the Load unpacked button that appears in the top left. </li>
+        <li> In the file picker, navigate to your project's root directory. </li>
+        <li> Select the build folder (created in Step 1) and click Open/Select. </li>
+    </ol>
 
 5. **Use Extension** <br>
     Once on a website click the extensions icon and click on the Educational Cookie Dashboard to open the dashboard. 
