@@ -50,5 +50,5 @@ Follow these steps to load the extension into Google Chrome.
     2. In the file picker, navigate to your project's root directory.
     3. Select the build folder (created in Step 1) and click Open/Select.
 
-5. **Use Extension** <br>
+5. **Use the Extension** <br>
     Once on a website click the extensions icon and click on the Educational Cookie Dashboard to open the dashboard. 
