@@ -8,7 +8,7 @@ This project is a React-based Chrome extension designed to improve users’ unde
 
 ### ⚙️ Prerequisites
 Before running this project, ensure you have the following installed:
-* **Node.js:** v16.0.0 or higher (Recommended)
+* **Node.js:** v16.0.0 or higher 
 * **npm:** Installed automatically with Node.js
 * **Google Chrome:** Required to load and test the extension
 
@@ -28,7 +28,7 @@ Before running this project, ensure you have the following installed:
    npm install
 
 
-# 🧩 Chrome Extension Deployment Guide
+## 🧩 Chrome Extension Deployment 
 
 Follow these steps to load the project into your Google Chrome browser.
 
