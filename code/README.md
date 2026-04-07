@@ -17,7 +17,7 @@ Before running this project, ensure you have the following installed:
 
 ## 📦 Installation
 
-1. **Clone the repository** (or navigate to the project folder).
+1. **Clone the repository** https://github.com/laurynn-wl/cookie_project.git
 2. **Install all project dependencies** by running:
    ```bash
    npm install
