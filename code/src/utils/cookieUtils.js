@@ -393,7 +393,7 @@ export const calculate_site_privacy_score = (cookies) => {
         if (!c.secure || !c.httpOnly){
             if (c.category === 'Tracking') {
                 // Reduces score for tracking cookies to prevent double counting
-                security_penalty_sum += 2;
+                security_penalty_sum += 1;
             } else {
                 security_penalty_sum += 5;
             }

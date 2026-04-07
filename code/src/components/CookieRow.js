@@ -2,7 +2,7 @@ import { get_insights } from '../utils/cookieUtils';
 
 
 /**
- * 
+ * Displays a single row in the cookie table, showing the cookie's name, domain, category, and risk insights
  */
 const cookie_row = ({ cookie, is_selected, on_selected, view_info, is_deleted }) => {
     

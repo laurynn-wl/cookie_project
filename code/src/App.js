@@ -1,5 +1,5 @@
 import React from 'react';
-import CookieDashboard from './components/Cookie_Dashboard'; // Adjust path if it's in a subfolder like './components/CookieDashboard'
+import CookieDashboard from './components/Cookie_Dashboard'; 
 
 function App() {
   return (

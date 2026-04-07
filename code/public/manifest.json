@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Cookie Risk Analyser",
+  "name": "Educational Cookie Dashboard",
   "version": "1.0",
   "description": "Interactive dashboard for understanding and managing web cookies.",
   "action": {
-    "default_title": "Open Cookie Dashbaord"
+    "default_title": "Open Cookie Dashboard"
   },
   "background": {
     "service_worker": "background.js"

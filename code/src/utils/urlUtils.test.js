@@ -37,7 +37,7 @@ describe('Unit Test: URL Construction Logic (UT-11/12)', () => {
             secure: true 
         };
         
-        // Expect clean domain without the dot
+        // Expect domain without the dot
         expect(getCookieUrl(cookie)).toBe('https://youtube.com/watch');
     });
 
@@ -53,7 +53,7 @@ describe('Unit Test: URL Construction Logic (UT-11/12)', () => {
         expect(getCookieUrl(cookie)).toBe('https://amazon.co.uk/gp/product/123');
     });
 
-    // Bonus: Null Safety
+    // Null Safety
     test('UT-12c: Returns empty string for null input', () => {
         expect(getCookieUrl(null)).toBe('');
         expect(getCookieUrl(undefined)).toBe('');

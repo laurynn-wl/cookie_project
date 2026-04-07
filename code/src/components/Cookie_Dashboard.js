@@ -112,7 +112,7 @@ function CookieDashboard() {
         if (!result.has_seen_onboarding) {
             set_helpCentre(true);
             
-            // 3. Use .set (not .get) to save the flag for next time
+            // 3. Use .set to save the flag for next time
             chrome.storage.local.set({ has_seen_onboarding: true }, () => {
                 console.log("Onboarding flag saved to storage.");
             });
@@ -169,13 +169,11 @@ function CookieDashboard() {
     // }, []);
 
     const show_popup = useCallback((config) => {
-        // If it's a string, convert it to our new object format
         const newPopup = typeof config === 'string' 
             ? { title: "Notification", message: config, warning: false } 
             : config;
 
         set_message(newPopup);
-        // Reset to null (not empty string) so the UI knows it's gone
         setTimeout(() => set_message(null), 3000);
     }, []);
 
@@ -427,16 +425,8 @@ function CookieDashboard() {
                 </main>
             </div>
             
-            {/* styling for popup message for accepting/rejecting/deleting cookies */}
-            {/* <div 
-                id="popup_message" 
-                className={`fixed bottom-10 right-10 bg-gray-700 text-white py-3 px-5 rounded-lg shadow-xl transition-all duration-300 ${popup_message ? '' : 'translate-y-20 opacity-0'}`}
-            >
-                {popup_message}
-            </div> */}
-
+        {/* Styling for popup message for accepting/rejecting/deleting cookies */}
         <div className={`fixed inset-0 z-[100] flex items-center justify-center pointer-events-none transition-all duration-300 ${popup_message ? 'opacity-100' : 'opacity-0'}`}>
-            {/* Use optional chaining (?.) so it doesn't crash when popup_message is null */}
             <div 
                 className={`bg-gray-800 border-2 p-6 rounded-2xl flex flex-col items-center gap-4 transform transition-all duration-500 shadow-2xl
                 ${popup_message?.warning ? 'border-amber-500 shadow-amber-500/20' : 'border-sky-500 shadow-sky-500/20'}
@@ -457,7 +447,7 @@ function CookieDashboard() {
                     </p>
                 </div>
 
-                {/* Progress Bar Color Sync */}
+                {/*Progress bar*/}
                 <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden mt-2">
                     <div className={`h-full transition-all duration-[3000ms] linear ${popup_message ? 'w-full' : 'w-0'} 
                         ${popup_message?.warning ? 'bg-amber-500' : 'bg-sky-500'}`} 

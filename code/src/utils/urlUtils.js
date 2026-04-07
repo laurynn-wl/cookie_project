@@ -1,4 +1,4 @@
-
+// Utility function to convert a cookie's domain and path into a URL - for testing script
 export const getCookieUrl = (cookie) => {
 
     if(!cookie) return '';

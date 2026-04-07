@@ -104,7 +104,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
     const is_multiple_rows = checked_count > 0 && checked_count < row_count;
     const is_all_checked = checked_count === row_count && row_count > 0;
 
-    // generates the table rows of each cookie 
+    // Generates the table rows of each cookie 
     const cookie_rows = useMemo(() => {
         return sorted_rows.map(cookie => (
             <CookieRow
@@ -216,9 +216,9 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                         {toggle_banner}
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="mb-0">
                     <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider"> Select Risk Levels:</span>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-3 mt-2">
                         {risk_toggles}
                     </div>
                 </div>

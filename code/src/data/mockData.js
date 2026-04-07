@@ -31,7 +31,7 @@ export const category_colour = {
 };
 
 export const risk_colour = {
-    'Low Risk': '#4ade80',
-    'Moderate Risk': '#fbbf24',
-    'High Risk': '#f87171'
+    'Low Risk': '#43a047',
+    'Moderate Risk': '#fdd835',
+    'High Risk': '#e53935'
 };

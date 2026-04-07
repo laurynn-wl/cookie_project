@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import TrophyCase from "./TrophyCase";
 import { useRef, useEffect} from "react";
 
-// Trophie centre for privacy streaks 
+// Trophy centre for privacy streaks 
 const TrophyModal = ({isOpen, onClose, streak}) => {
     const trophy_modal_click = useRef(null);
     
