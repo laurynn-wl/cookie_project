@@ -1,4 +1,4 @@
-#  Project Name: Educational Cookie Dashboard
+# Educational Cookie Dashboard
 
 This project is a React-based Chrome extension designed to improve users’ understanding of website cookies and online privacy.
 
@@ -6,7 +6,7 @@ This project is a React-based Chrome extension designed to improve users’ unde
 
 ## Environment Setup & Dependencies
 
-### ⚙️ Prerequisites
+### Prerequisites
 Before running this project, ensure you have the following installed:
 * **Node.js:** v16.0.0 or higher 
 * **npm:** Installed automatically with Node.js
@@ -14,7 +14,7 @@ Before running this project, ensure you have the following installed:
 
 ---
 
-## 📦 Installation
+## Installation
 
 1. **Clone the repository** 
     ```bash
@@ -27,7 +27,7 @@ Before running this project, ensure you have the following installed:
    ```bash
    npm install
 
-## 🧩 Chrome Extension Deployment 
+## Chrome Extension Deployment 
 
 Follow these steps to load the extension into Google Chrome. 
 
