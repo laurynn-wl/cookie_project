@@ -54,7 +54,7 @@ Follow these steps to load the extension into Google Chrome.
     Once on a website click the extensions icon and click on the Educational Cookie Dashboard to open the dashboard. 
 
 ## Testing 
-1. **Run Tests**
+1. **Run Tests** <br>
     To run unit, integration and system tests for this project, run the following command in your terminal:
     ```bash
     cd cookie_project/code
