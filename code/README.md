@@ -1,4 +1,4 @@
-# 🛡️ Project Name: Educational Cookie Dashboard
+#  Project Name: Educational Cookie Dashboard
 
 This project is a React-based Chrome extension designed to improve users’ understanding of website cookies and online privacy.
 
