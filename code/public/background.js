@@ -121,7 +121,7 @@ chrome.cookies.onChanged.addListener((cookie_changes) => {
 
     // If this cookie matches any in our block list (recently deleted cookies), remove it again   
     if (block_list.has(cookie_info)) {
-        console.log(` Deleted cookie: ${cookie.name} tried to regenerate.`);
+        console.log(` Deleted cookie: ${cookie.name} tried to regenerate, removing again.`);
 
         const protocol = cookie.secure ? "https:" : "http:";
         const domain = cookie.domain.startsWith('.') ? cookie.domain.slice(1) : cookie.domain;

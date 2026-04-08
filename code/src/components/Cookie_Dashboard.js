@@ -60,8 +60,8 @@ function CookieDashboard() {
                 if (result.cookies_from_site && result.cookies_from_site.length > 0) {
                     console.log("Real Cookies Found:", result.cookies_from_site);
                     const real_data = map_chrome_cookies(result.cookies_from_site);
-                    chrome.storage.local.get({['deleted_cookies_ids']: []}, (storage) => {
-                        const deleted_ids = storage.deleted_cookies_ids;
+                    chrome.storage.local.get({deleted_cookies_ids: []}, (storage) => {
+                        const deleted_ids = storage.deleted_cookies_ids || [];
                         set_deleted_cookies_ids(deleted_ids);
 
                         const filtered_data = real_data.filter(cookie => !deleted_ids.includes(cookie.id));

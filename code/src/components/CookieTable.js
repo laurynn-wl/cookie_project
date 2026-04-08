@@ -1,4 +1,4 @@
-import {useMemo, useCallback, useState, act} from 'react';
+import {useMemo, useCallback, useState,} from 'react';
 import CookieRow from './CookieRow';
 import {Lock, BadgeInfo, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { category_data, category_colour, risk_colour} from '../data/mockData';
@@ -65,7 +65,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
     // Sorts cookies based on column and direction 
     const sorted_rows = useMemo(() => {
 
-        console.time(`PT-02: Scan Speed (Daily Mail)`);
+        console.time(`PT-02: Scan Speed`);
 
         let sorted_cookies = [...filtered_cookies];
         if (searchTerm.key !== null){
@@ -88,7 +88,7 @@ const Active_cookie_table = ({ cookies, delete_cookies, view_info, if_pressed, s
                 return 0;
             });
         }
-        console.timeEnd(`PT-02: Scan Speed (Daily Mail)`);
+        console.timeEnd(`PT-02: Scan Speed`);
         return sorted_cookies;
     }, [filtered_cookies, searchTerm]);
 
