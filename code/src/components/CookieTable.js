@@ -1,4 +1,4 @@
-import {useMemo, useCallback, useState,} from 'react';
+import {useMemo, useCallback, useState} from 'react';
 import CookieRow from './CookieRow';
 import {Lock, BadgeInfo, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { category_data, category_colour, risk_colour} from '../data/mockData';
